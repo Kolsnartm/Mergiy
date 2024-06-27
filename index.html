@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Пригоди Хитрука</title>
+    <link rel="stylesheet" href="style.css">
+    
+    <!-- Додані рядки для PWA -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="apple-mobile-web-app-title" content="Mergiy">
+    <link rel="apple-touch-icon" href="icon-192x192.png">
+    <!-- Кінець доданих рядків для PWA -->
+</head>
+<body>
+    <canvas id="gameCanvas"></canvas>
+    <div id="gameOverScreen">
+        <h2>Гру Закінчено!</h2>
+        <p>Ваш рахунок: <span id="finalScore"></span></p>
+        <p>Час: <span id="finalTime"></span> секунд</p> 
+        <button id="restartButton">Грати Знову</button>
+    </div>
+
+    <script src="howler.js"></script> 
+    <script src="script.js"></script> 
+</body>
+</html>

@@ -1,0 +1,20 @@
+{
+  "short_name": "Mergiy",
+  "name": "Mergiy’s adventures",
+  "icons": [
+    {
+      "src": "icon-192x192.png", 
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "icon-512x512.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": "/Mergiy/",  
+  "background_color": "black",
+  "display": "standalone",
+  "theme_color": "black"
+}
