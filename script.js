@@ -93,8 +93,6 @@ const phrases = [
 
 // Емодзі
 const mushroomEmojis = ['🍄', '🌱', '🌿', '🌝', '☘️', '🍀', '🌿'];
-const treeEmojis = ['🌳', '🌲'];
-const houseEmojis = ['🏠', '🏘️', '🏡'];
 
 // Зображення
 const backgroundImg = new Image();
@@ -111,53 +109,7 @@ function drawEmoji(emoji, x, y, size) {
 
 function drawBackground() {
     ctx.drawImage(backgroundImg, 0, 0, canvas.width, canvas.height);
-
-    ctx.fillStyle = '#8B4513';
-    ctx.fillRect(0, canvas.height - 90, canvas.width, 90);
-
-    ctx.fillStyle = '#228B22';
-    ctx.fillRect(0, canvas.height - 90, canvas.width, 10);
-
-    // Оптимізовано: Видалення об'єктів поза екраном після циклу
-    for (let i = background.trees.length - 1; i >= 0; i--) {
-        const tree = background.trees[i];
-        drawEmoji(tree.emoji, tree.x, tree.y - tree.size, tree.size);
-        tree.x -= tree.speed * gameSpeed;
-        if (tree.x + tree.size < 0) {
-            background.trees.splice(i, 1); 
-        }
-    }
-
-    for (let i = background.houses.length - 1; i >= 0; i--) {
-        const house = background.houses[i];
-        drawEmoji(house.emoji, house.x, house.y - house.size, house.size);
-        house.x -= house.speed * gameSpeed;
-        if (house.x + house.size < 0) {
-            background.houses.splice(i, 1); 
-        }
-    }
 }
-
-// Функція генерації об'єктів фону
-function generateBackgroundObjects(type, emojis, maxObjects) {
-    let lastX = 0;
-    for (let i = 0; i < maxObjects; i++) {
-        if (Math.random() < 0.3) {
-            background[type].push({
-                x: lastX + Math.random() * canvas.width / 3 + 100,
-                y: canvas.height - 90,
-                size: 50 + Math.random() * 50,
-                speed: 0.5 + Math.random() * 0.5,
-                emoji: emojis[Math.floor(Math.random() * emojis.length)]
-            });
-            lastX += background[type][background[type].length - 1].size; 
-        }
-    }
-}
-
-// Генерація початкових об'єктів фону
-generateBackgroundObjects('trees', treeEmojis, 20);
-generateBackgroundObjects('houses', houseEmojis, 5);
 
 // Функції створення ігрових об'єктів
 function createObstacle() {
@@ -192,22 +144,17 @@ function checkCollision(obj1, obj2) {
 function update() {
     if (!gameStarted || gameOver) return;
 
-    // Використовуємо requestAnimationFrame для плавної анімації
     requestAnimationFrame(update); 
 
-    // Очищення canvas
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // Малювання фону
     drawBackground();
 
-    // Оновлення позиції Хітрука
     hitruk.velocity += hitruk.gravity;
     hitruk.y += hitruk.velocity;
 
-    // Перевірка зіткнення Хітрука з землею
-    if (hitruk.y + hitruk.size > canvas.height - 90) {
-        hitruk.y = canvas.height - 90 - hitruk.size;
+    if (hitruk.y + hitruk.size > canvas.height) {
+        hitruk.y = canvas.height - hitruk.size;
         hitruk.velocity = 0;
         if (!hitruk.isInvincible) {
             gameOver = true;
@@ -216,13 +163,11 @@ function update() {
         }
     }
 
-    // Малювання Хітрука
     drawEmoji('🧙‍♂️', hitruk.x, hitruk.y, hitruk.size);
 
-   // Полоса Супер Гриба
     if (hitruk.isInvincible) {
         ctx.font = '20px Arial';
-        const timeText = `Час: ${(elapsedTime / 1000).toFixed(2)}`;
+        const timeText = `🕚: ${(elapsedTime / 1000).toFixed(2)}`; 
         const timeTextWidth = ctx.measureText(timeText).width;
         const barWidth = timeTextWidth * 2; 
         const barX = (canvas.width - barWidth) / 2; 
@@ -244,7 +189,7 @@ function update() {
 
         if (hitruk.invincibilityTime === 20000) {
             speedBeforeSuperMushroom = gameSpeed;
-            gameSpeed *= 3; // Збільшення швидкості в 3 рази
+            gameSpeed *= 3; 
         }
 
         hitruk.invincibilityTime -= 1000 / 60;
@@ -259,10 +204,8 @@ function update() {
         }
     }
 
-    // Прискорення гри
     gameSpeed += 0.0001; 
 
-    // Генерація предметів
     if (Math.random() < 0.02 * gameSpeed) {
         collectibles.push({
             x: canvas.width,
@@ -273,19 +216,15 @@ function update() {
         });
     }
 
-    // Генерація перешкод
     if (Math.random() < 0.005 * gameSpeed) {
         createObstacle();
     }
 
-    // Генерація супергриба
     if (elapsedTime > 30000 && Date.now() - lastSuperMushroomTime > 50000) {
         createSuperMushroom();
         lastSuperMushroomTime = Date.now();
     }
 
-    // Оновлення предметів
-    // Оптимізовано: Видалення предметів поза екраном після циклу
     for (let i = collectibles.length - 1; i >= 0; i--) {
         const collectible = collectibles[i];
         collectible.x -= 2 * gameSpeed;
@@ -316,14 +255,11 @@ function update() {
             }
         }
 
-        // Видалення предметів, що вийшли за межі екрана
         if (collectible.x < -collectible.size) {
             collectibles.splice(i, 1);
         }
     }
 
-    // Оновлення перешкод
-    // Оптимізовано: Видалення перешкод поза екраном після циклу
     for (let i = obstacles.length - 1; i >= 0; i--) {
         const obstacle = obstacles[i];
         obstacle.x -= 3 * gameSpeed;
@@ -339,7 +275,6 @@ function update() {
 
         drawEmoji(obstacle.type, obstacle.x, obstacle.y, obstacle.size);
 
-        // Видалення перешкод, що вийшли за межі екрана
         if (obstacle.x < -obstacle.size) {
             obstacles.splice(i, 1);
         }
@@ -356,12 +291,10 @@ function update() {
         }
     }
 
-    // Обмеження кількості частинок
     if (particles.length > MAX_PARTICLES) {
         particles.splice(0, particles.length - MAX_PARTICLES);
     }
 
-    // Оновлення та малювання частинок
     for (let i = particles.length - 1; i >= 0; i--) {
         const particle = particles[i];
         particle.y += particle.velocity;
@@ -386,16 +319,15 @@ function update() {
     // Відображення рахунку та часу
     ctx.fillStyle = 'black';
     ctx.font = '20px Arial';
-    ctx.fillText(`Рахунок: ${score}`, 10, 30);
+    ctx.fillText(`💰: ${score}`, 10, 30); // Змінено "Рахунок" на "💰"
 
-    elapsedTime = performance.now() - startTime; // Використовуємо performance.now()
+    elapsedTime = performance.now() - startTime;
 
-    const timeText = `Час: ${(elapsedTime / 1000).toFixed(2)}`;
+    const timeText = `🕚: ${(elapsedTime / 1000).toFixed(2)}`; // Змінено "Час" на "🕚"
     const timeTextWidth = ctx.measureText(timeText).width;
     ctx.fillText(timeText, canvas.width - timeTextWidth - 10, 30);
 }
 
-// Функції обробки подій
 function jump() {
     if (gameStarted && !gameOver) {
         hitruk.velocity = hitruk.jump;
@@ -404,7 +336,7 @@ function jump() {
 
 function startGame() {
     gameStarted = true;
-    startTime = performance.now(); // Використовуємо performance.now()
+    startTime = performance.now();
     backgroundMusic.play();
     update();
 }
@@ -431,7 +363,6 @@ function restartGame() {
     startGame();
 }
 
-// Додавання слухачів подій
 canvas.addEventListener('touchstart', function(event) {
     event.preventDefault();
     if (!gameStarted) {
@@ -465,7 +396,6 @@ document.addEventListener('keydown', function(event) {
     }
 });
 
-// Функція створення частинок
 function createParticles(x, y, phrase = null) {
     const particleCount = Math.min(5, Math.floor(score / 10) + 3);
     for (let i = 0; i < particleCount; i++) {
@@ -493,7 +423,6 @@ function createParticles(x, y, phrase = null) {
     }
 }
 
-// Функції малювання екранів
 function drawStartScreen() {
     ctx.fillStyle = '#87CEEB';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -511,11 +440,6 @@ function showGameOverScreen() {
     gameOverScreen.style.display = 'flex';
 }
 
-// Обробник події для кнопки перезапуску
 restartButton.addEventListener('click', restartGame);
 
-// Малювання стартового екрану
 drawStartScreen();
-
-// Реєстрація Service Worker (за потреби)
-// ... 
