@@ -163,7 +163,7 @@ function update() {
         }
     }
 
-    drawEmoji('🧙‍♂️', hitruk.x, hitruk.y, hitruk.size);
+    drawEmoji('🧙🏻‍♂️', hitruk.x, hitruk.y, hitruk.size);
 
     if (hitruk.isInvincible) {
         ctx.font = '20px Arial';
