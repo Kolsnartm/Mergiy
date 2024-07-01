@@ -101,6 +101,13 @@ backgroundImg.src = 'Background.jpeg';
 const superMushroomImg = new Image();
 superMushroomImg.src = 'Supermushroom.png';
 
+// Додаємо змінні та завантаження зображення трави
+const grassImg = new Image();
+grassImg.src = 'grass.png';
+
+let grassOffset = 0;
+let grassSpeed = 2; 
+
 // Функції малювання
 function drawEmoji(emoji, x, y, size) {
     ctx.font = `${size}px Arial`;
@@ -109,6 +116,31 @@ function drawEmoji(emoji, x, y, size) {
 
 function drawBackground() {
     ctx.drawImage(backgroundImg, 0, 0, canvas.width, canvas.height);
+}
+
+// Функції для оновлення та малювання трави
+function updateGrass() {
+    grassOffset -= grassSpeed * gameSpeed;
+    if (grassOffset <= -1648) { 
+        grassOffset = 0;
+    }
+}
+
+function drawMovingGrass() {
+    const grassHeight = Math.round(canvas.height * 0.25); // Змінено висоту на 10%
+    const y = canvas.height - grassHeight;
+
+    const repetitions = Math.ceil(canvas.width / 1648) + 1; 
+
+    for (let i = 0; i < repetitions; i++) {
+        ctx.drawImage(
+            grassImg, 
+            grassOffset + (i * 1648), 
+            y,
+            1648, 
+            grassHeight 
+        );
+    }
 }
 
 // Функції створення ігрових об'єктів
@@ -149,6 +181,8 @@ function update() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     drawBackground();
+    updateGrass(); // Оновлюємо траву
+    drawMovingGrass(); // Малюємо траву
 
     hitruk.velocity += hitruk.gravity;
     hitruk.y += hitruk.velocity;
@@ -190,6 +224,7 @@ function update() {
         if (hitruk.invincibilityTime === 20000) {
             speedBeforeSuperMushroom = gameSpeed;
             gameSpeed *= 3; 
+            grassSpeed *= 3; // Прискорюємо траву
         }
 
         hitruk.invincibilityTime -= 1000 / 60;
@@ -201,6 +236,7 @@ function update() {
             backgroundMusic.play();
 
             gameSpeed = speedBeforeSuperMushroom; 
+            grassSpeed /= 3; // Повертаємо швидкість трави до нормальної
         }
     }
 
@@ -319,11 +355,11 @@ function update() {
     // Відображення рахунку та часу
     ctx.fillStyle = 'black';
     ctx.font = '20px Arial';
-    ctx.fillText(`💰: ${score}`, 10, 30); // Змінено "Рахунок" на "💰"
+    ctx.fillText(`💰: ${score}`, 10, 30); 
 
     elapsedTime = performance.now() - startTime;
 
-    const timeText = `🕚: ${(elapsedTime / 1000).toFixed(2)}`; // Змінено "Час" на "🕚"
+    const timeText = `🕚: ${(elapsedTime / 1000).toFixed(2)}`; 
     const timeTextWidth = ctx.measureText(timeText).width;
     ctx.fillText(timeText, canvas.width - timeTextWidth - 10, 30);
 }
@@ -333,6 +369,16 @@ function jump() {
         hitruk.velocity = hitruk.jump;
     }
 }
+
+// Переконайтеся, що зображення трави завантажено перед початком гри
+Promise.all([
+    new Promise(resolve => backgroundImg.onload = resolve),
+    new Promise(resolve => grassImg.onload = resolve),
+    new Promise(resolve => superMushroomImg.onload = resolve)
+]).then(() => {
+    // Ваш код ініціалізації гри
+    drawStartScreen(); 
+});
 
 function startGame() {
     gameStarted = true;
@@ -358,6 +404,9 @@ function restartGame() {
     particles.length = 0;
     lastSuperMushroomTime = 0;
     speedBeforeSuperMushroom = 0;
+    // Додаємо скидання параметрів трави
+    grassOffset = 0;
+    grassSpeed = 2;
     gameOverScreen.style.display = 'none';
 
     startGame();
@@ -441,5 +490,3 @@ function showGameOverScreen() {
 }
 
 restartButton.addEventListener('click', restartGame);
-
-drawStartScreen();
