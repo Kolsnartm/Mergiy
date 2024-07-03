@@ -3,19 +3,30 @@ body, html {
     padding: 0;
     width: 100%;
     height: 100%;
-    /* overflow: hidden; */  <-- Цей рядок закоментовано 
 }
 
 canvas {
-    display: block;
+       display: block;
+   }
+
+
+
+.paused { /* Додано клас для паузи анімації */
+  animation-play-state: paused;
+}
+
+/* Додано клас для розмиття */
+.blurred {
+  filter: blur(5px); /* Налаштуйте ступінь розмиття за потребою */
 }
 
 #gameOverScreen {
-    position: absolute;
-    top: 0;
-    left: 0;
+    position: fixed; /* Фіксуємо позицію екрана */
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%); /* Центруємо екран */
     width: 100%;
-    height: 100%;
+    max-width: 400px; /* Обмежуємо максимальну ширину */
     background-color: rgba(0, 0, 0, 0.5);
     display: none;
     justify-content: center;
@@ -23,6 +34,9 @@ canvas {
     flex-direction: column;
     color: white;
     font-size: 24px;
+    padding: 20px;
+    border-radius: 10px;
+    z-index: 10; 
 }
 
 #restartButton {
