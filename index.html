@@ -1,52 +1,123 @@
 <!DOCTYPE html>
 <html lang="uk">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Mergiy</title>
-    <link rel="stylesheet" href="style.css">
-    
-    <!-- Додані рядки для PWA -->
-    <link rel="manifest" href="manifest.json">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black">
-    <meta name="apple-mobile-web-app-title" content="Mergiy">
-    <link rel="apple-touch-icon" href="icon-192x192.png">
-    <!-- Кінець доданих рядків для PWA -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Mergiy</title>
+  <link rel="stylesheet" href="style.css">
 
-    <!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-2X1HK7Q6JE"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
+  <link rel="manifest" href="manifest.json">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="apple-mobile-web-app-title" content="Mergiy">
+  <link rel="apple-touch-icon" href="icon-192x192.png">
 
-  gtag('config', 'G-2X1HK7Q6JE');
-</script>
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-2X1HK7Q6JE"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-2X1HK7Q6JE');
+  </script>
+
+  <style>
+    /* ... (ваш CSS) ... */
+
+    /* Стилі екрану завантаження */
+    #loadingScreen {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: white;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 20; 
+    }
+
+    #loadingBar {
+      width: 300px;
+      height: 20px;
+      background-color: #e0e0e0;
+      border-radius: 10px;
+      overflow: hidden; 
+    }
+
+    #loadingProgress {
+      width: 0%; 
+      height: 100%;
+      background-color: #4CAF50;
+      transition: width 0.3s ease-in-out; /* Додаємо плавний перехід ширини */
+    }
+
+    #loadingText {
+      margin-top: 10px;
+      font-size: 18px;
+    }
+  </style>
 </head>
 <body>
-    <canvas id="gameCanvas"></canvas>
-    <div id="gameOverScreen">
-        <h2>ТАЙ ТАКЕ</h2>
-        <p>Зібрано: <span id="finalScore"></span> 💰</p>
-        <p>Час: <span id="finalTime"></span> секунд</p> 
-        <button id="restartButton">Грати Знову</button>
+  <!-- Екран завантаження -->
+  <div id="loadingScreen">
+    <div id="loadingBar">
+      <div id="loadingProgress"></div>
     </div>
+    <div id="loadingText">Завантаження... 0%</div>
+  </div>
 
-    <script src="howler.js"></script> 
-    <script src="script.js"></script> 
+  <canvas id="gameCanvas"></canvas>
 
-<script>
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', function() {
-      navigator.serviceWorker.register('/Mergiy/service-worker.js').then(function(registration) {
-        console.log('ServiceWorker registration successful with scope: ', registration.scope);
-      }, function(err) {
-        console.log('ServiceWorker registration failed: ', err);
-      });
+  <div id="gameOverScreen">
+    <h2>Game Over</h2>
+    <p>Score: <span id="finalScore"></span> 💰</p>
+    <p>Time: <span id="finalTime"></span> sec</p> 
+    <button id="restartButton">Try again!</button>
+  </div>
+
+  <div id="gameStartScreen" class="background-blur"></div> 
+  <button id="startButton">Press to Start</button> 
+
+  <script src="howler.js"></script> 
+  <script src="script.js"></script> 
+
+  <script>
+    // ... (ваш JavaScript код з script.js) ...
+
+    // Отримуємо елементи екрану завантаження
+    const loadingScreen = document.getElementById('loadingScreen');
+    const loadingProgress = document.getElementById('loadingProgress');
+    const loadingText = document.getElementById('loadingText');
+
+    // Функція для оновлення прогресу завантаження
+    function updateLoadingProgress(progress) {
+      loadingProgress.style.width = `${progress}%`;
+      loadingText.textContent = `Завантаження... ${progress}%`;
+    }
+
+    // Завантажуємо зображення та оновлюємо прогрес завантаження
+    Promise.all([
+      new Promise(resolve => {
+        grassImg.onload = resolve;
+        updateLoadingProgress(33); 
+      }),
+      new Promise(resolve => {
+        background.img.onload = resolve;
+        updateLoadingProgress(66);
+      }),
+      new Promise(resolve => {
+        superMushroomImg.onload = resolve;
+        updateLoadingProgress(100);
+      })
+    ]).then(() => {
+      setTimeout(() => { 
+        loadingScreen.style.display = 'none';
+        canvas.classList.add('blurred');
+        gameStartScreen.style.display = 'flex';
+      }, 500); 
     });
-  }
-</script>
-
+  </script>
 </body>
 </html>
