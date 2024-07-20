@@ -21,7 +21,88 @@
   </script>
 
   <style>
-    /* ... (ваш CSS) ... */
+    body, html {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    canvas {
+      display: block;
+    }
+
+    /* Пауза анімації */
+    .paused { 
+      animation-play-state: paused;
+    }
+
+    /* Розмиття */
+    .blurred {
+      filter: blur(5px); 
+    }
+
+    /* Екран програшу */
+    #gameOverScreen {
+      position: fixed; 
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%); 
+      width: 100%;
+      max-width: 400px; 
+      background-color: rgba(0, 0, 0, 0.5);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      color: white;
+      font-size: 24px;
+      padding: 20px;
+      border-radius: 10px;
+      z-index: 10; 
+    }
+
+    /* Кнопка перезапуску */
+    #restartButton {
+      padding: 15px 30px;
+      font-size: 20px;
+      background-color: #4CAF50; 
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    /* Екран початку гри - ТІЛЬКИ ФОН */
+    #gameStartScreen {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 10; 
+
+      /* Додаємо фон та розмиття */
+      background-image: url('Background.jpeg');
+      background-size: cover;
+      filter: blur(5px);
+    }
+
+    /* Кнопка "Press to Start" */
+    #startButton {
+      position: fixed; 
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%); 
+      padding: 15px 30px;
+      font-size: 20px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      z-index: 11; 
+    }
 
     /* Стилі екрану завантаження */
     #loadingScreen {
@@ -30,7 +111,7 @@
       left: 0;
       width: 100%;
       height: 100%;
-      background-color: white;
+      background-color: black; /* Чорний фон */
       display: flex;
       flex-direction: column;
       justify-content: center;
@@ -50,17 +131,18 @@
       width: 0%; 
       height: 100%;
       background-color: #4CAF50;
-      transition: width 0.3s ease-in-out; /* Додаємо плавний перехід ширини */
+      transition: width 0.3s ease-in-out; 
     }
 
     #loadingText {
       margin-top: 10px;
       font-size: 18px;
+      color: white; /* Білий текст */
     }
   </style>
 </head>
 <body>
-  <!-- Екран завантаження -->
+
   <div id="loadingScreen">
     <div id="loadingBar">
       <div id="loadingProgress"></div>
@@ -84,53 +166,20 @@
   <script src="script.js"></script> 
 
   <script>
-    // ... (ваш JavaScript код з script.js) ...
-
-    // Отримуємо елементи екрану завантаження
-    const loadingScreen = document.getElementById('loadingScreen');
-    const loadingProgress = document.getElementById('loadingProgress');
-    const loadingText = document.getElementById('loadingText');
-
-    // Функція для оновлення прогресу завантаження
-    function updateLoadingProgress(progress) {
-      loadingProgress.style.width = `${progress}%`;
-      loadingText.textContent = `Завантаження... ${progress}%`;
-    }
-
-    // Завантажуємо зображення та оновлюємо прогрес завантаження
-    Promise.all([
-      new Promise(resolve => {
-        grassImg.onload = resolve;
-        updateLoadingProgress(33); 
-      }),
-      new Promise(resolve => {
-        background.img.onload = resolve;
-        updateLoadingProgress(66);
-      }),
-      new Promise(resolve => {
-        superMushroomImg.onload = resolve;
-        updateLoadingProgress(100);
-      })
-    ]).then(() => {
-      setTimeout(() => { 
-        loadingScreen.style.display = 'none';
-        canvas.classList.add('blurred');
-        gameStartScreen.style.display = 'flex';
-      }, 500); 
-    });
+    // ... Ваш JavaScript код з script.js ...
   </script>
 
-<script>
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', function() {
-      navigator.serviceWorker.register('/Mergiy/service-worker.js').then(function(registration) {
-        console.log('ServiceWorker registration successful with scope: ', registration.scope);
-      }, function(err) {
-        console.log('ServiceWorker registration failed: ', err);
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function() {
+        navigator.serviceWorker.register('/Mergiy/service-worker.js').then(function(registration) {
+          console.log('ServiceWorker registration successful with scope: ', registration.scope);
+        }, function(err) {
+          console.log('ServiceWorker registration failed: ', err);
+        });
       });
-    });
-  }
-</script>
+    }
+  </script>
 
 </body>
 </html>
