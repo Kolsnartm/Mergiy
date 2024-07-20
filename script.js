@@ -1,7 +1,6 @@
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
-// Звуки
 const backgroundMusic = new Howl({
   src: ['Birds.wav'],
   loop: true,
@@ -21,20 +20,18 @@ const endSound = new Howl({
   src: ['End.wav']
 });
 
-// Елементи UI
 const gameOverScreen = document.getElementById('gameOverScreen');
+const gameStartScreen = document.getElementById('gameStartScreen');
+const startButton = document.getElementById('startButton');
 const finalScore = document.getElementById('finalScore');
 const finalTime = document.getElementById('finalTime');
 const restartButton = document.getElementById('restartButton');
 
-// Розміри canvas
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 
-// Максимальна кількість частинок
 const MAX_PARTICLES = 30;
 
-// Константи гри
 const hitruk = {
   x: canvas.width / 4,
   y: canvas.height / 2,
@@ -48,7 +45,6 @@ const hitruk = {
   scoreMultiplier: 1
 };
 
-// Глобальні змінні гри
 let collectibles = [];
 let particles = [];
 let obstacles = [];
@@ -62,26 +58,21 @@ let elapsedTime = 0;
 let lastSuperMushroomTime = 0;
 let speedBeforeSuperMushroom = 0;
 
-// Змінна для відстеження стану розмиття трави
-let isGrassBlurred = false;
+let initialAnimationDuration = canvas.style.animationDuration;
 
-// Зберігаємо початкову тривалість анімації
-let initialAnimationDuration = canvas.style.animationDuration; 
-
-// Фон
 const background = {
-     img: new Image(),
-     speed: 0.2,
-     x: 0
-   };
-   background.img.src = 'Background.jpeg';
+  img: new Image(),
+  speed: 0.2,
+  x: 0
+};
+background.img.src = 'Background.jpeg';
 
 function drawBackground() {
   const imgAspectRatio = background.img.width / background.img.height;
   const canvasAspectRatio = canvas.width / canvas.height;
-  
+
   let drawWidth, drawHeight;
-  
+
   if (canvasAspectRatio > imgAspectRatio) {
     drawWidth = canvas.width;
     drawHeight = canvas.width / imgAspectRatio;
@@ -89,21 +80,17 @@ function drawBackground() {
     drawHeight = canvas.height;
     drawWidth = canvas.height * imgAspectRatio;
   }
-  
+
   background.x -= background.speed * gameSpeed;
   if (background.x <= -drawWidth) {
     background.x = 0;
   }
-  
+
   const drawY = (canvas.height - drawHeight) / 2;
-  
+
   ctx.drawImage(background.img, background.x, drawY, drawWidth, drawHeight);
   ctx.drawImage(background.img, background.x + drawWidth, drawY, drawWidth, drawHeight);
 }
-
-background.img.onload = function() {
-  drawBackground();
-};
 
 // Трава
 const grassImg = new Image();
@@ -111,29 +98,6 @@ grassImg.src = 'grass.png';
 
 let grassOffset = 0;
 let grassSpeed = 2;
-
-// Фрази
-const phrases = [
-  "Оце да!",
-  "Малий бл*дь світи!",
-  "Неймовірно!",
-  "ммм",
-  "а пахне як!",
-  "О! Тай буде діло!!",
-  "Хай буде!",
-  "Та візьми тяжку",
-  "По трохи, мікродозінг!",
-  "Може бути",
-  "Чиназес!",
-  "Це було ПОТУЖНО!",
-  "Смаколик!",
-  "Їжовик",
-  "Де ГРІНДЕР?!",
-  "Підлічити",
-  "Йдем скрутимось",
-  "Ти шо угараєш?",
-  "Та ми чучуть"
-];
 
 // Емодзі
 const mushroomEmojis = ['🍄', '🌱', '🌿', '🌝', '☘️', '🍀', '🌿'];
@@ -157,13 +121,6 @@ function updateGrass() {
 }
 
 function drawMovingGrass() {
-  // Додайте/видаліть клас розмиття:
-  if (isGrassBlurred) {
-    canvas.classList.add('blurred');
-  } else {
-    canvas.classList.remove('blurred');
-  }
-
   const grassHeight = Math.round(canvas.height * 0.25);
   const y = canvas.height - grassHeight;
 
@@ -204,9 +161,9 @@ function createSuperMushroom() {
 // Функція перевірки зіткнень
 function checkCollision(obj1, obj2) {
   return obj1.x < obj2.x + obj2.size &&
-         obj1.x + obj1.size > obj2.x &&
-         obj1.y < obj2.y + obj2.size &&
-         obj1.y + obj1.size > obj2.y;
+    obj1.x + obj1.size > obj2.x &&
+    obj1.y < obj2.y + obj2.size &&
+    obj1.y + obj1.size > obj2.y;
 }
 
 function update() {
@@ -216,7 +173,7 @@ function update() {
 
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-drawBackground();
+  drawBackground();
 
   updateGrass();
   drawMovingGrass();
@@ -251,7 +208,6 @@ drawBackground();
 
     ctx.fillStyle = 'black';
     ctx.font = '20px Arial';
-    ctx.fillText('О! Це Єжовік! 🤩', hitruk.x + hitruk.size / 2, hitruk.y - 10);
 
     if (!boostSound.playing()) {
       boostSound.play();
@@ -261,16 +217,15 @@ drawBackground();
     if (hitruk.invincibilityTime === 20000) {
       speedBeforeSuperMushroom = gameSpeed;
 
-      // Плавно збільшуємо швидкість гри
       let targetGameSpeed = gameSpeed * 3;
-      let transitionDuration = 500; // Тривалість переходу в мілісекундах
+      let transitionDuration = 500;
 
       let startTime = performance.now();
       function updateSpeed() {
         let timeElapsed = performance.now() - startTime;
         let progress = Math.min(timeElapsed / transitionDuration, 1);
         gameSpeed = speedBeforeSuperMushroom + (targetGameSpeed - speedBeforeSuperMushroom) * progress;
-        grassSpeed = 2 * gameSpeed; // Змінюємо швидкість трави пропорційно швидкості гри
+        grassSpeed = 2 * gameSpeed;
 
         if (progress < 1) {
           requestAnimationFrame(updateSpeed);
@@ -287,8 +242,7 @@ drawBackground();
       boostSound.pause();
       backgroundMusic.play();
 
-      // Плавно зменшуємо швидкість гри
-      let transitionDuration = 500; // Тривалість переходу в мілісекундах
+      let transitionDuration = 500; 
 
       let startTime = performance.now();
       function updateSpeed() {
@@ -302,9 +256,6 @@ drawBackground();
         }
       }
       updateSpeed();
-
-      // Вимкнення розмиття трави:
-      isGrassBlurred = false;
     }
   }
 
@@ -312,7 +263,6 @@ drawBackground();
 
   gameSpeed += 0.0001;
 
-  // Використовуємо збережену початкову тривалість анімації
   canvas.style.animationDuration = `${parseFloat(initialAnimationDuration) / gameSpeed}s`;
 
   if (Math.random() < 0.02 * gameSpeed) {
@@ -320,8 +270,7 @@ drawBackground();
       x: canvas.width,
       y: Math.random() * (canvas.height * 0.9 - 140) + 50,
       type: mushroomEmojis[Math.floor(Math.random() * mushroomEmojis.length)],
-      size: 30,
-      phrase: phrases[Math.floor(Math.random() * phrases.length)]
+      size: 30
     });
   }
 
@@ -360,7 +309,7 @@ drawBackground();
           score += 10;
         }
 
-        createParticles(collectible.x, collectible.y, collectible.phrase);
+        createParticles(collectible.x, collectible.y);
       }
     }
 
@@ -414,13 +363,7 @@ drawBackground();
       particles.splice(i, 1);
     } else {
       ctx.globalAlpha = particle.opacity;
-      if (particle.type === 'text') {
-        ctx.fillStyle = 'black';
-        ctx.font = '20px Arial';
-        ctx.fillText(particle.phrase, particle.x, particle.y);
-      } else {
-        drawEmoji(particle.emoji, particle.x, particle.y, 20);
-      }
+      drawEmoji(particle.emoji, particle.x, particle.y, 20);
       ctx.globalAlpha = 1;
     }
   }
@@ -443,18 +386,16 @@ function jump() {
   }
 }
 
-Promise.all([
-  new Promise(resolve => grassImg.onload = resolve),
-  new Promise(resolve => background.img.onload = resolve),
-  new Promise(resolve => superMushroomImg.onload = resolve)
-]).then(() => {
-  drawStartScreen();
-});
-
 function startGame() {
   gameStarted = true;
   startTime = performance.now();
   backgroundMusic.play();
+
+  gameStartScreen.style.display = 'none'; 
+  canvas.classList.remove('blurred');
+
+  startButton.style.display = 'none'; 
+
   update();
 }
 
@@ -479,17 +420,16 @@ function restartGame() {
   grassSpeed = 2;
   background.x = 0;
   gameOverScreen.style.display = 'none';
-  canvas.classList.remove('paused');
+  canvas.classList.remove('blurred');
 
-  // Скидаємо анімацію фону:
   canvas.style.animation = 'none';
-  canvas.offsetHeight; 
-  canvas.style.animation = null; 
+  canvas.offsetHeight;
+  canvas.style.animation = null;
 
   startGame();
 }
 
-canvas.addEventListener('touchstart', function(event) {
+canvas.addEventListener('touchstart', function (event) {
   event.preventDefault();
   if (!gameStarted) {
     startGame();
@@ -500,7 +440,7 @@ canvas.addEventListener('touchstart', function(event) {
   }
 });
 
-canvas.addEventListener('click', function(event) {
+canvas.addEventListener('click', function (event) {
   if (!gameStarted) {
     startGame();
   } else if (gameOver) {
@@ -510,7 +450,7 @@ canvas.addEventListener('click', function(event) {
   }
 });
 
-document.addEventListener('keydown', function(event) {
+document.addEventListener('keydown', function (event) {
   if (event.code === 'Space') {
     if (!gameStarted) {
       startGame();
@@ -522,7 +462,7 @@ document.addEventListener('keydown', function(event) {
   }
 });
 
-function createParticles(x, y, phrase = null) {
+function createParticles(x, y) {
   const particleCount = Math.min(5, Math.floor(score / 10) + 3);
   for (let i = 0; i < particleCount; i++) {
     const randomAngle = Math.random() * Math.PI * 2;
@@ -537,26 +477,6 @@ function createParticles(x, y, phrase = null) {
       type: 'emoji'
     });
   }
-  if (phrase) {
-    particles.push({
-      x: x,
-      y: y,
-      velocity: -3,
-      opacity: 1,
-      type: 'text',
-      phrase: phrase
-    });
-  }
-}
-
-function drawStartScreen() {
-  ctx.fillStyle = '#87CEEB';
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-  ctx.fillStyle = 'black';
-  ctx.font = '30px Arial';
-  ctx.textAlign = 'center';
-  ctx.fillText('Натисніть, щоб почати гру', canvas.width / 2, canvas.height / 2);
-  ctx.textAlign = 'left';
 }
 
 function showGameOverScreen() {
@@ -564,7 +484,41 @@ function showGameOverScreen() {
   finalScore.textContent = score;
   finalTime.textContent = (elapsedTime / 1000).toFixed(2);
   gameOverScreen.style.display = 'flex';
-  canvas.classList.add('paused'); 
+  canvas.classList.add('blurred'); 
 }
 
-restartButton.addEventListener('click', restartGame);
+// Отримуємо елементи екрану завантаження
+const loadingScreen = document.getElementById('loadingScreen');
+const loadingProgress = document.getElementById('loadingProgress');
+const loadingText = document.getElementById('loadingText');
+
+// Функція для оновлення прогресу завантаження
+function updateLoadingProgress(progress) {
+  loadingProgress.style.width = `${progress}%`;
+  loadingText.textContent = `Loading... ${progress}%`;
+}
+
+// Завантажуємо зображення та оновлюємо прогрес завантаження
+Promise.all([
+  new Promise(resolve => {
+    grassImg.onload = resolve;
+    updateLoadingProgress(33); 
+  }),
+  new Promise(resolve => {
+    background.img.onload = resolve;
+    updateLoadingProgress(66); 
+  }),
+  new Promise(resolve => {
+    superMushroomImg.onload = resolve;
+    updateLoadingProgress(100); 
+  })
+]).then(() => {
+  setTimeout(() => {
+    loadingScreen.style.display = 'none';
+    canvas.classList.add('blurred');
+    gameStartScreen.style.display = 'flex';
+  }, 500); 
+});
+
+startButton.addEventListener('click', startGame);
+restartButton.addEventListener('click', restartGame); 
