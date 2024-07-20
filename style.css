@@ -1,50 +1,117 @@
 body, html {
-    margin: 0;
-    padding: 0;
-    width: 100%;
-    height: 100%;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
 }
 
 canvas {
-       display: block;
-   }
+  display: block;
+}
 
-
-
-.paused { /* Додано клас для паузи анімації */
+/* Пауза анімації */
+.paused { 
   animation-play-state: paused;
 }
 
-/* Додано клас для розмиття */
+/* Розмиття */
 .blurred {
-  filter: blur(5px); /* Налаштуйте ступінь розмиття за потребою */
+  filter: blur(5px); 
 }
 
+/* Екран програшу */
 #gameOverScreen {
-    position: fixed; /* Фіксуємо позицію екрана */
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%); /* Центруємо екран */
-    width: 100%;
-    max-width: 400px; /* Обмежуємо максимальну ширину */
-    background-color: rgba(0, 0, 0, 0.5);
-    display: none;
-    justify-content: center;
-    align-items: center;
-    flex-direction: column;
-    color: white;
-    font-size: 24px;
-    padding: 20px;
-    border-radius: 10px;
-    z-index: 10; 
+  position: fixed; 
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%); 
+  width: 100%;
+  max-width: 400px; 
+  background-color: rgba(0, 0, 0, 0.5);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  color: white;
+  font-size: 24px;
+  padding: 20px;
+  border-radius: 10px;
+  z-index: 10; 
 }
 
+/* Кнопка перезапуску */
 #restartButton {
-    padding: 15px 30px;
-    font-size: 20px;
-    background-color: #4CAF50; 
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
+  padding: 15px 30px;
+  font-size: 20px;
+  background-color: #4CAF50; 
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+/* Екран початку гри - ТІЛЬКИ ФОН */
+#gameStartScreen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 10; 
+
+  /* Додаємо фон та розмиття */
+  background-image: url('Background.jpeg');
+  background-size: cover;
+  filter: blur(5px);
+}
+
+/* Кнопка "Press to Start" */
+#startButton {
+  position: fixed; 
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%); 
+  padding: 15px 30px;
+  font-size: 20px;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  z-index: 11; 
+}
+
+/* Стилі екрану завантаження */
+#loadingScreen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: black;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 20; 
+}
+
+#loadingBar {
+  width: 300px;
+  height: 20px;
+  background-color: #e0e0e0;
+  border-radius: 10px;
+  overflow: hidden; 
+}
+
+#loadingProgress {
+  width: 0%; 
+  height: 100%;
+  background-color: #4CAF50;
+  transition: width 0.3s ease-in-out; 
+}
+
+#loadingText {
+  margin-top: 10px;
+  font-size: 18px;
 }
