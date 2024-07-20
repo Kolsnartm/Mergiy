@@ -495,7 +495,7 @@ const loadingText = document.getElementById('loadingText');
 // Функція для оновлення прогресу завантаження
 function updateLoadingProgress(progress) {
   loadingProgress.style.width = `${progress}%`;
-  loadingText.textContent = `Loading... ${progress}%`;
+  loadingText.textContent = `Loading...`; 
 }
 
 // Завантажуємо зображення та оновлюємо прогрес завантаження
