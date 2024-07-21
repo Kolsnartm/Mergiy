@@ -19,12 +19,6 @@ canvas {
   filter: blur(5px); 
 }
 
-/* Клас для елементів без розмиття */
-.no-blur {
-  filter: none !important;
-  backdrop-filter: none !important;
-}
-
 /* Екран програшу */
 #gameOverScreen {
   position: fixed; 
@@ -64,10 +58,11 @@ canvas {
   width: 100%;
   height: 100%;
   z-index: 10; 
+
+  /* Додаємо фон та розмиття */
   background-image: url('Background.jpeg');
   background-size: cover;
   filter: blur(5px);
-  pointer-events: none;
 }
 
 /* Кнопка "Press to Start" */
@@ -83,69 +78,7 @@ canvas {
   border: none;
   border-radius: 5px;
   cursor: pointer;
-  z-index: 11;
-  filter: none;
-  backdrop-filter: none;
-}
-
-/* Кнопка звуку */
-#soundButton {
-  position: fixed; 
-  top: 20px; /* Вирівнювання з іншими елементами зверху */
-  right: 20px;
-  padding: 10px;
-  font-size: 24px;
-  background-color: #4CAF50;
-  color: white;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  z-index: 11;
-}
-
-/* Кнопка паузи */
-#pauseButton {
-  position: fixed;
-  top: 14px; /* Вирівнювання з іншими елементами зверху */
-  left: 50%;
-  transform: translateX(-50%); 
-  background: none;
-  border: none;
-  padding: 0;
-  font-size: 15px; 
-  cursor: pointer;
-  z-index: 11;
-}
-
-/* Екран паузи */
-#pauseScreen {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 100%;
-  max-width: 400px;
-  background-color: rgba(0, 0, 0, 0.5);
-  display: none; 
-  justify-content: center;
-  align-items: center;
-  flex-direction: column;
-  color: white;
-  font-size: 24px;
-  padding: 20px;
-  border-radius: 10px;
-  z-index: 10; 
-}
-
-/* Кнопка відновлення гри */
-#resumeButton {
-  padding: 15px 30px;
-  font-size: 20px;
-  background-color: #4CAF50; 
-  color: white;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
+  z-index: 11; 
 }
 
 /* Стилі екрану завантаження */
@@ -155,7 +88,7 @@ canvas {
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: black; 
+  background-color: black;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -181,5 +114,4 @@ canvas {
 #loadingText {
   margin-top: 10px;
   font-size: 18px;
-  color: white; 
 }
