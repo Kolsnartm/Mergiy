@@ -54,8 +54,8 @@ let speedBeforeSuperMushroom = 0;
 const hitruk = {
   x: canvas.width / 4,
   y: canvas.height / 2,
-  size: 40,
-  originalSize: 40,
+  size: 48,
+  originalSize: 48,
   velocity: 0,
   gravity: 0.5,
   jump: -10,
@@ -79,6 +79,10 @@ background.img.src = 'Background.jpeg';
 // Трава
 const grassImg = new Image();
 grassImg.src = 'grass.png';
+
+// Чарівник
+const charWizardImg = new Image();
+charWizardImg.src = 'elements/charWizard.png';
 
 let grassOffset = 0;
 let grassSpeed = 2;
@@ -216,7 +220,8 @@ function update() {
     }
   }
 
-  drawEmoji('🧙🏻‍♂️', hitruk.x, hitruk.y, hitruk.size);
+  // Малюємо зображення чарівника замість емодзі
+  ctx.drawImage(charWizardImg, hitruk.x, hitruk.y, hitruk.size, hitruk.size);
 
   if (hitruk.isInvincible) {
     ctx.font = '20px Arial';
@@ -459,7 +464,7 @@ function startGame() {
   canvas.classList.remove('blurred');
 
   startButton.style.display = 'none';
-  soundButton.style.display = 'none'; 
+  soundButton.style.display = 'none';
   update();
 }
 
@@ -509,14 +514,14 @@ function togglePause() {
     backgroundMusic.pause();
     pauseScreen.style.display = 'flex';
     canvas.classList.add('blurred');
-    soundButton.style.display = 'block'; 
+    soundButton.style.display = 'block';
   } else {
     backgroundMusic.play();
     pauseScreen.style.display = 'none';
     canvas.classList.remove('blurred');
     soundButton.style.display = 'none';
 
-    requestAnimationFrame(update); 
+    requestAnimationFrame(update);
   }
 }
 
@@ -531,9 +536,9 @@ canvas.addEventListener('touchstart', function (event) {
   } else {
     // Перевірка, чи торкнулися верхньої області екрану (15-20 пікселів від верху)
     if (event.touches[0].clientY < 20 && gameStarted) {
-      togglePause(); 
+      togglePause();
     } else {
-      jump(); 
+      jump();
     }
   }
 });
@@ -590,7 +595,7 @@ function showGameOverScreen() {
   gameOverScreen.style.display = 'flex';
   canvas.classList.add('blurred');
 
-  soundButton.style.display = 'block'; 
+  soundButton.style.display = 'block';
 }
 
 // Обробники подій для кнопок
@@ -623,14 +628,18 @@ function updateLoadingProgress(progress) {
 Promise.all([
   new Promise((resolve) => {
     grassImg.onload = resolve;
-    updateLoadingProgress(33);
+    updateLoadingProgress(25);
   }),
   new Promise((resolve) => {
     background.img.onload = resolve;
-    updateLoadingProgress(66);
+    updateLoadingProgress(50);
   }),
   new Promise((resolve) => {
     superMushroomImg.onload = resolve;
+    updateLoadingProgress(75);
+  }),
+  new Promise((resolve) => {
+    charWizardImg.onload = resolve; // Додали завантаження charWizardImg
     updateLoadingProgress(100);
   }),
 ]).then(() => {
