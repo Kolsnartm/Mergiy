@@ -54,8 +54,8 @@ let speedBeforeSuperMushroom = 0;
 const hitruk = {
   x: canvas.width / 4,
   y: canvas.height / 2,
-  size: 48,
-  originalSize: 48,
+  size: 49,
+  originalSize: 49,
   velocity: 0,
   gravity: 0.6,
   jump: -13,
