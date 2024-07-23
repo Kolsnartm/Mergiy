@@ -92,7 +92,21 @@ const superMushroomImg = new Image();
 superMushroomImg.src = 'Supermushroom.png';
 
 // Зібрані предмети
-const mushroomEmojis = ['🍄', '🌱', '🌿', '🌝', '☘️', '🍀', '🌿'];
+const mushroomImages = [
+  'elements/M1.png',
+  'elements/M2.png',
+  'elements/M3.png',
+  'elements/M4.png',
+  'elements/M5.png',
+  'elements/M6.png',
+  'elements/M7.png',
+  'elements/M8.png', 
+].map((name) => {
+  const img = new Image();
+  img.src = name; // Шлях вже містить "elements/"
+  return img;
+});
+
 
 // Анімація
 let initialAnimationDuration = canvas.style.animationDuration;
@@ -133,6 +147,10 @@ function drawBackground() {
 function drawEmoji(emoji, x, y, size) {
   ctx.font = `${size}px Arial`;
   ctx.fillText(emoji, x, y);
+}
+
+function drawCollectible(img, x, y, size) {
+  ctx.drawImage(img, x, y, size, size);
 }
 
 // Функції оновлення
@@ -193,6 +211,7 @@ function checkCollision(obj1, obj2) {
     obj1.y + obj1.size > obj2.y
   );
 }
+
 
 // Функція оновлення гри
 function update() {
@@ -312,11 +331,12 @@ function update() {
 
   // Додавання предметів
   if (Math.random() < 0.02 * gameSpeed) {
+    const randomImageIndex = Math.floor(Math.random() * mushroomImages.length);
     collectibles.push({
       x: canvas.width,
       y: Math.random() * (canvas.height * 0.9 - 140) + 50,
-      type: mushroomEmojis[Math.floor(Math.random() * mushroomEmojis.length)],
-      size: 30,
+      type: mushroomImages[randomImageIndex],
+      size: 50,
     });
   }
 
@@ -346,7 +366,8 @@ function update() {
         collectible.size
       );
     } else {
-      drawEmoji(
+      // Малюємо зображення предмета
+      drawCollectible(
         collectible.type,
         collectible.x,
         collectible.y,
