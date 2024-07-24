@@ -256,7 +256,7 @@ function recordJump() {
 
 // Функція для запуску автоматичного стрибка
 function startAutoJump() {
-  if (autoJumpInterval) return;
+  if (autoJumpInterval) return; 
 
   isAutoJumping = true;
 
@@ -265,7 +265,7 @@ function startAutoJump() {
   for (let i = 1; i < recentJumps.length; i++) {
     intervalSum += recentJumps[i] - recentJumps[i - 1];
   }
-  const averageInterval = recentJumps.length > 1 ? intervalSum / (recentJumps.length - 1) : 300; 
+  const averageInterval = recentJumps.length > 1 ? intervalSum / (recentJumps.length - 1) : 300;
 
   autoJumpInterval = setInterval(() => {
     jump();
@@ -303,7 +303,7 @@ function update() {
       endSound.play();
       showGameOverScreen();
     } else if (isAutoJumping) {
-      stopAutoJump();
+      stopAutoJump(); 
     }
   }
 
@@ -541,10 +541,9 @@ function update() {
   ctx.font = '20px Arial';
   ctx.fillText(timeText, canvas.width - timeTextWidth - 10, 30);
 
-
   if (gamePaused && boostSound.playing()) {
     boostSound.pause();
-  } 
+  }
 }
 
 function jump() {
@@ -613,7 +612,7 @@ function togglePause() {
   if (gamePaused) {
     backgroundMusic.pause();
     if (boostSound.playing()) {
-      boostSound.pause();
+      boostSound.pause(); 
     }
 
     pauseScreen.style.display = 'flex';
@@ -623,8 +622,8 @@ function togglePause() {
     updateSoundButtonImage();
   } else {
     backgroundMusic.play();
-    if (boostSound.playing()) {
-      boostSound.play();
+    if (soundOn && hitruk.isInvincible && !boostSound.playing()) {
+      boostSound.play(); 
     }
 
     pauseScreen.style.display = 'none';
@@ -638,14 +637,14 @@ function togglePause() {
 
 canvas.addEventListener('touchstart', function (event) {
   event.preventDefault();
-  recordJump();
+  recordJump(); 
 
   if (!gameStarted) {
     startGame();
   } else if (gameOver) {
     //restartGame();
   } else {
-    if (event.touches[0].clientY < PAUSE_AREA_HEIGHT && gameStarted) {
+    if (event.touches[0].clientY < PAUSE_AREA_HEIGHT && gameStarted) { 
       togglePause();
     } else {
       jump();
@@ -656,7 +655,7 @@ canvas.addEventListener('touchstart', function (event) {
 
 canvas.addEventListener('touchend', function (event) {
   event.preventDefault();
-  stopAutoJump();
+  stopAutoJump(); 
 });
 
 canvas.addEventListener('click', function (event) {
@@ -682,9 +681,18 @@ document.addEventListener('keydown', function (event) {
 });
 
 document.addEventListener('visibilitychange', function() {
-  if (document.hidden) { // Перевіряємо, чи стала вкладка фоновою
+  if (document.hidden) { 
     if (gameStarted && !gameOver && !gamePaused) {
       togglePause();
+    }
+  } else {  
+    if (gameStarted && gamePaused) {
+      if (soundOn) {
+        backgroundMusic.mute(false);
+        if (hitruk.isInvincible && !boostSound.playing()) {
+          boostSound.play();
+        }
+      }
     }
   }
 });
@@ -740,7 +748,7 @@ function showGameOverScreen() {
   canvas.classList.add('blurred');
 
   soundButton.style.display = 'block';
-  updateSoundButtonImage(); 
+  updateSoundButtonImage();
 }
 
 startButton.addEventListener('click', startGame);
@@ -750,12 +758,12 @@ function updateSoundButtonImage() {
   soundButton.innerHTML = ''; 
 
   if (soundOn) {
-    soundOnImg.width = 40;  
-    soundOnImg.height = 40; 
+    soundOnImg.width = 40; 
+    soundOnImg.height = 40;
     soundButton.appendChild(soundOnImg);
   } else {
-    soundOffImg.width = 40;  
-    soundOffImg.height = 40; 
+    soundOffImg.width = 40; 
+    soundOffImg.height = 40;
     soundButton.appendChild(soundOffImg);
   }
 }
@@ -768,7 +776,7 @@ soundButton.addEventListener('click', () => {
   coinSound.mute(!soundOn);
   endSound.mute(!soundOn);
 
-  updateSoundButtonImage();
+  updateSoundButtonImage(); 
 });
 
 resumeButton.addEventListener('click', togglePause);
@@ -831,11 +839,11 @@ function showStartScreen() {
   updateSoundButtonImage();
 
   function updateSoundButtonImage() {
-  soundButton.innerHTML = '';
+  soundButton.innerHTML = ''; 
 
   if (soundOn) {
-    soundOnImg.width = 40;  
-    soundOnImg.height = 40; 
+    soundOnImg.width = 40; 
+    soundOnImg.height = 40;
     soundButton.appendChild(soundOnImg);
   } else {
     soundOffImg.width = 40; 
