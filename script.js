@@ -48,6 +48,14 @@ let baseGameSpeed = 1;
 let gameSpeed = baseGameSpeed;
 let lastSuperMushroomTime = 0;
 let speedBeforeSuperMushroom = 0;
+const PAUSE_AREA_HEIGHT = 60; 
+
+// Змінні для автоматичного стрибка
+let autoJumpInterval = null;
+const jumpHistory = [];
+const historyDuration = 2; 
+const maxHistoryLength = historyDuration * 60; 
+let isAutoJumping = false;
 
 // Гравці
 const hitruk = {
@@ -236,6 +244,41 @@ function checkCollision(obj1, obj2) {
   );
 }
 
+// Функція для додавання запису до історії стрибків
+function recordJump() {
+  if (!isAutoJumping) {
+    jumpHistory.push(Date.now());
+    if (jumpHistory.length > maxHistoryLength) {
+      jumpHistory.shift(); 
+    }
+  }
+}
+
+// Функція для запуску автоматичного стрибка
+function startAutoJump() {
+  if (autoJumpInterval) return;
+
+  isAutoJumping = true;
+
+  let intervalSum = 0;
+  const recentJumps = jumpHistory.filter(timestamp => Date.now() - timestamp <= historyDuration * 1000);
+  for (let i = 1; i < recentJumps.length; i++) {
+    intervalSum += recentJumps[i] - recentJumps[i - 1];
+  }
+  const averageInterval = recentJumps.length > 1 ? intervalSum / (recentJumps.length - 1) : 300; 
+
+  autoJumpInterval = setInterval(() => {
+    jump();
+  }, averageInterval);
+}
+
+// Функція для зупинки автоматичного стрибка
+function stopAutoJump() {
+  clearInterval(autoJumpInterval);
+  autoJumpInterval = null;
+  isAutoJumping = false;
+}
+
 // Функція оновлення гри
 function update() {
   if (!gameStarted || gameOver || gamePaused) return;
@@ -259,6 +302,8 @@ function update() {
       gameOver = true;
       endSound.play();
       showGameOverScreen();
+    } else if (isAutoJumping) {
+      stopAutoJump();
     }
   }
 
@@ -495,6 +540,11 @@ function update() {
   ctx.fillStyle = 'black';
   ctx.font = '20px Arial';
   ctx.fillText(timeText, canvas.width - timeTextWidth - 10, 30);
+
+
+  if (gamePaused && boostSound.playing()) {
+    boostSound.pause();
+  } 
 }
 
 function jump() {
@@ -562,14 +612,20 @@ function togglePause() {
 
   if (gamePaused) {
     backgroundMusic.pause();
+    if (boostSound.playing()) {
+      boostSound.pause();
+    }
 
     pauseScreen.style.display = 'flex';
     canvas.classList.add('blurred');
 
     soundButton.style.display = 'block';
-    updateSoundButtonImage(); 
+    updateSoundButtonImage();
   } else {
     backgroundMusic.play();
+    if (boostSound.playing()) {
+      boostSound.play();
+    }
 
     pauseScreen.style.display = 'none';
     canvas.classList.remove('blurred');
@@ -582,18 +638,25 @@ function togglePause() {
 
 canvas.addEventListener('touchstart', function (event) {
   event.preventDefault();
+  recordJump();
 
   if (!gameStarted) {
     startGame();
   } else if (gameOver) {
     //restartGame();
   } else {
-    if (event.touches[0].clientY < 20 && gameStarted) {
+    if (event.touches[0].clientY < PAUSE_AREA_HEIGHT && gameStarted) {
       togglePause();
     } else {
       jump();
+      startAutoJump(); 
     }
   }
+});
+
+canvas.addEventListener('touchend', function (event) {
+  event.preventDefault();
+  stopAutoJump();
 });
 
 canvas.addEventListener('click', function (event) {
@@ -615,6 +678,20 @@ document.addEventListener('keydown', function (event) {
     } else {
       jump();
     }
+  }
+});
+
+document.addEventListener('visibilitychange', function() {
+  if (document.hidden) { // Перевіряємо, чи стала вкладка фоновою
+    if (gameStarted && !gameOver && !gamePaused) {
+      togglePause();
+    }
+  }
+});
+
+window.addEventListener('pagehide', function() {
+  if (gameStarted && !gameOver && !gamePaused) {
+    togglePause();
   }
 });
 
@@ -669,22 +746,20 @@ function showGameOverScreen() {
 startButton.addEventListener('click', startGame);
 restartButton.addEventListener('click', restartGame);
 
-// Функція для оновлення зображення кнопки звуку
 function updateSoundButtonImage() {
-  soundButton.innerHTML = ''; // Очищуємо попередній вміст кнопки
+  soundButton.innerHTML = ''; 
 
   if (soundOn) {
-    soundOnImg.width = 40;  // Встановлюємо ширину зображення
-    soundOnImg.height = 40; // Встановлюємо висоту зображення
+    soundOnImg.width = 40;  
+    soundOnImg.height = 40; 
     soundButton.appendChild(soundOnImg);
   } else {
-    soundOffImg.width = 40;  // Встановлюємо ширину зображення
-    soundOffImg.height = 40; // Встановлюємо висоту зображення
+    soundOffImg.width = 40;  
+    soundOffImg.height = 40; 
     soundButton.appendChild(soundOffImg);
   }
 }
 
-// Обробник події для кнопки звуку
 soundButton.addEventListener('click', () => {
   soundOn = !soundOn;
 
@@ -693,7 +768,7 @@ soundButton.addEventListener('click', () => {
   coinSound.mute(!soundOn);
   endSound.mute(!soundOn);
 
-  updateSoundButtonImage(); // Оновлюємо зображення кнопки
+  updateSoundButtonImage();
 });
 
 resumeButton.addEventListener('click', togglePause);
@@ -756,15 +831,15 @@ function showStartScreen() {
   updateSoundButtonImage();
 
   function updateSoundButtonImage() {
-  soundButton.innerHTML = ''; // Очищуємо попередній вміст кнопки
+  soundButton.innerHTML = '';
 
   if (soundOn) {
-    soundOnImg.width = 40;  // Встановлюємо ширину зображення
-    soundOnImg.height = 40; // Встановлюємо висоту зображення
+    soundOnImg.width = 40;  
+    soundOnImg.height = 40; 
     soundButton.appendChild(soundOnImg);
   } else {
-    soundOffImg.width = 40;  // Встановлюємо ширину зображення
-    soundOffImg.height = 40; // Встановлюємо висоту зображення
+    soundOffImg.width = 40; 
+    soundOffImg.height = 40; 
     soundButton.appendChild(soundOffImg);
   }
 }
