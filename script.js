@@ -1,6 +1,3 @@
-const canvas = document.getElementById('gameCanvas');
-const ctx = canvas.getContext('2d');
-
 // Звуки
 const backgroundMusic = new Howl({
   src: ['Birds.wav'],
@@ -33,6 +30,8 @@ const restartButton = document.getElementById('restartButton');
 const resumeButton = document.getElementById('resumeButton');
 
 // Налаштування канвасу
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 
@@ -54,8 +53,8 @@ let speedBeforeSuperMushroom = 0;
 const hitruk = {
   x: canvas.width / 4,
   y: canvas.height / 2,
-  size: 49,
-  originalSize: 49,
+  size: 51,
+  originalSize: 51,
   velocity: 0,
   gravity: 0.6,
   jump: -13,
@@ -100,16 +99,40 @@ const mushroomImages = [
   'elements/M5.png',
   'elements/M6.png',
   'elements/M7.png',
-  'elements/M8.png', 
+  'elements/M8.png',
 ].map((name) => {
   const img = new Image();
-  img.src = name; // Шлях вже містить "elements/"
+  img.src = name;
   return img;
 });
 
+// Завантажуємо зображення перешкод
+const obstacleImages = [
+  'elements/O1.png',
+  'elements/O2.png',
+  'elements/O3.png',
+  'elements/O4.png',
+].map((imagePath) => {
+  const img = new Image();
+  img.src = imagePath;
+  return img;
+});
 
 // Анімація
 let initialAnimationDuration = canvas.style.animationDuration;
+
+// Зображення для інтерфейсу
+const scoreImg = new Image();
+scoreImg.src = 'elements/Ui2.png';
+
+const timeImg = new Image();
+timeImg.src = 'elements/Ui1.png';
+
+const soundOnImg = new Image();
+soundOnImg.src = 'elements/S1.png';
+
+const soundOffImg = new Image();
+soundOffImg.src = 'elements/S2.png';
 
 // Функції малювання
 function drawBackground() {
@@ -181,13 +204,13 @@ function drawMovingGrass() {
 
 // Функції створення об'єктів
 function createObstacle() {
+  const randomImageIndex = Math.floor(Math.random() * obstacleImages.length);
+
   obstacles.push({
     x: canvas.width,
     y: Math.random() * (canvas.height - 190) + 50,
-    type: ['🦅', '🦟', '🐝', '🐲', '🧟‍♀️'][
-      Math.floor(Math.random() * 5)
-    ],
-    size: 40,
+    image: obstacleImages[randomImageIndex],
+    size: 69,
     falling: false,
     fallSpeed: 0,
   });
@@ -198,7 +221,8 @@ function createSuperMushroom() {
     x: canvas.width,
     y: Math.random() * (canvas.height * 0.9 - 140) + 50,
     type: 'super',
-    size: 60,
+    image: superMushroomImg,
+    size: 70,
   });
 }
 
@@ -212,10 +236,9 @@ function checkCollision(obj1, obj2) {
   );
 }
 
-
 // Функція оновлення гри
 function update() {
-  if (!gameStarted || gameOver || gamePaused) return; // Пауза
+  if (!gameStarted || gameOver || gamePaused) return;
 
   requestAnimationFrame(update);
 
@@ -239,13 +262,13 @@ function update() {
     }
   }
 
-  // Малюємо зображення чарівника замість емодзі
   ctx.drawImage(charWizardImg, hitruk.x, hitruk.y, hitruk.size, hitruk.size);
 
   if (hitruk.isInvincible) {
     ctx.font = '20px Arial';
-    const timeText = `🕚: ${(elapsedTime / 1000).toFixed(2)}`;
+    const timeText = ` : ${(elapsedTime / 1000).toFixed(2)}`;
     const timeTextWidth = ctx.measureText(timeText).width;
+
     const barWidth = timeTextWidth * 2;
     const barX = (canvas.width - barWidth) / 2;
     const barY = 40;
@@ -298,11 +321,11 @@ function update() {
       hitruk.isInvincible = false;
       hitruk.size = hitruk.originalSize;
       hitruk.scoreMultiplier = 1;
+
       boostSound.pause();
       backgroundMusic.play();
 
       let transitionDuration = 500;
-
       let startTime = performance.now();
 
       function updateSpeed() {
@@ -329,14 +352,14 @@ function update() {
     parseFloat(initialAnimationDuration) / gameSpeed
   }s`;
 
-  // Додавання предметів
   if (Math.random() < 0.02 * gameSpeed) {
     const randomImageIndex = Math.floor(Math.random() * mushroomImages.length);
+
     collectibles.push({
       x: canvas.width,
       y: Math.random() * (canvas.height * 0.9 - 140) + 50,
       type: mushroomImages[randomImageIndex],
-      size: 50,
+      size: mushroomImages[randomImageIndex] === 'elements/M5.png' ? 100 : 50,
     });
   }
 
@@ -352,21 +375,19 @@ function update() {
     lastSuperMushroomTime = Date.now();
   }
 
-  // Обробка зібраних предметів
   for (let i = collectibles.length - 1; i >= 0; i--) {
     const collectible = collectibles[i];
     collectible.x -= 2 * gameSpeed;
 
-    if (collectible.type === 'super') {
+    if (collectible.image) {
       ctx.drawImage(
-        superMushroomImg,
+        collectible.image,
         collectible.x,
         collectible.y,
         collectible.size,
         collectible.size
       );
     } else {
-      // Малюємо зображення предмета
       drawCollectible(
         collectible.type,
         collectible.x,
@@ -401,7 +422,6 @@ function update() {
     }
   }
 
-  // Обробка перешкод
   for (let i = obstacles.length - 1; i >= 0; i--) {
     const obstacle = obstacles[i];
     obstacle.x -= 3 * gameSpeed;
@@ -415,7 +435,7 @@ function update() {
       }
     }
 
-    drawEmoji(obstacle.type, obstacle.x, obstacle.y, obstacle.size);
+    ctx.drawImage(obstacle.image, obstacle.x, obstacle.y, obstacle.size, obstacle.size);
 
     if (obstacle.x < -obstacle.size) {
       obstacles.splice(i, 1);
@@ -433,7 +453,6 @@ function update() {
     }
   }
 
-  // Обробка часток
   if (particles.length > MAX_PARTICLES) {
     particles.splice(0, particles.length - MAX_PARTICLES);
   }
@@ -441,6 +460,7 @@ function update() {
   for (let i = particles.length - 1; i >= 0; i--) {
     const particle = particles[i];
     particle.y += particle.velocity;
+
     particle.velocity += 0.1;
     particle.opacity -= 0.02;
 
@@ -448,34 +468,45 @@ function update() {
       particles.splice(i, 1);
     } else {
       ctx.globalAlpha = particle.opacity;
-      drawEmoji(particle.emoji, particle.x, particle.y, 20);
+
+      ctx.filter = 'brightness(150%)';
+
+      if (particle.type === 'image') {
+        ctx.drawImage(particle.image, particle.x, particle.y, 35, 35);
+      }
+
+      ctx.filter = 'none';
       ctx.globalAlpha = 1;
     }
   }
 
-  // Відображення рахунку та часу
+  // Відображення рахунку
+  ctx.drawImage(scoreImg, 10, 10, 30, 30);
   ctx.fillStyle = 'black';
   ctx.font = '20px Arial';
-  ctx.fillText(`💰: ${score}`, 10, 30);
+  ctx.fillText(`: ${score}`, 45, 30);
 
   elapsedTime = performance.now() - startTime;
 
-  const timeText = `🕚: ${(elapsedTime / 1000).toFixed(2)}`;
+  // Відображення часу гри
+  const timeText = `: ${(elapsedTime / 1000).toFixed(2)}`;
   const timeTextWidth = ctx.measureText(timeText).width;
+  ctx.drawImage(timeImg, canvas.width - timeTextWidth - 45, 10, 30, 30);
+  ctx.fillStyle = 'black';
+  ctx.font = '20px Arial';
   ctx.fillText(timeText, canvas.width - timeTextWidth - 10, 30);
 }
 
-// Функція стрибка
 function jump() {
   if (gameStarted && !gameOver && !gamePaused) {
     hitruk.velocity = hitruk.jump;
   }
 }
 
-// Функція старту гри
 function startGame() {
   gameStarted = true;
   gameOver = false;
+
   score = 0;
   startTime = performance.now();
 
@@ -486,10 +517,10 @@ function startGame() {
 
   startButton.style.display = 'none';
   soundButton.style.display = 'none';
+
   update();
 }
 
-// Функція перезапуску гри
 function restartGame() {
   hitruk.y = canvas.height / 2;
   hitruk.velocity = 0;
@@ -501,7 +532,6 @@ function restartGame() {
   score = 0;
   gameOver = false;
   gameStarted = false;
-
   gameSpeed = 1;
   baseGameSpeed = 1;
 
@@ -527,26 +557,29 @@ function restartGame() {
   startGame();
 }
 
-// Функція для перемикання паузи
 function togglePause() {
   gamePaused = !gamePaused;
 
   if (gamePaused) {
     backgroundMusic.pause();
+
     pauseScreen.style.display = 'flex';
     canvas.classList.add('blurred');
+
     soundButton.style.display = 'block';
+    updateSoundButtonImage(); 
   } else {
     backgroundMusic.play();
+
     pauseScreen.style.display = 'none';
     canvas.classList.remove('blurred');
+
     soundButton.style.display = 'none';
 
     requestAnimationFrame(update);
   }
 }
 
-// Обробники подій
 canvas.addEventListener('touchstart', function (event) {
   event.preventDefault();
 
@@ -555,7 +588,6 @@ canvas.addEventListener('touchstart', function (event) {
   } else if (gameOver) {
     //restartGame();
   } else {
-    // Перевірка, чи торкнулися верхньої області екрану (15-20 пікселів від верху)
     if (event.touches[0].clientY < 20 && gameStarted) {
       togglePause();
     } else {
@@ -586,43 +618,73 @@ document.addEventListener('keydown', function (event) {
   }
 });
 
-// Функція створення частинок
 function createParticles(x, y) {
   const particleCount = Math.min(5, Math.floor(score / 10) + 3);
+
+  const imagePaths = [
+    'elements/E1.png',
+    'elements/E2.png',
+    'elements/E3.png',
+    'elements/E4.png',
+    'elements/E5.png',
+    'elements/E6.png'
+  ];
 
   for (let i = 0; i < particleCount; i++) {
     const randomAngle = Math.random() * Math.PI * 2;
     const particleSpeed = Math.random() * 3 + 1;
 
-    particles.push({
-      x: x + Math.random() * 30 - 15,
-      y: y,
-      velocity: -particleSpeed * Math.sin(randomAngle),
-      velocityX: particleSpeed * Math.cos(randomAngle),
-      opacity: 1,
-      emoji: ['😀', '😃', '😄', '😁', '😆', '🤩', '🍄', '🌟', '✨'][
-        Math.floor(Math.random() * 9)
-      ],
-      type: 'emoji',
-    });
+    const randomImageIndex = Math.floor(Math.random() * imagePaths.length);
+
+    const particleImage = new Image();
+    particleImage.src = imagePaths[randomImageIndex];
+
+    particleImage.onload = () => {
+      particles.push({
+        x: x + Math.random() * 30 - 15,
+        y: y,
+        velocity: -particleSpeed * Math.sin(randomAngle),
+        velocityX: particleSpeed * Math.cos(randomAngle),
+        opacity: 1,
+        image: particleImage,
+        type: 'image',
+      });
+    };
   }
 }
 
-// Функція показу екрану програшу
 function showGameOverScreen() {
   backgroundMusic.pause();
+
   finalScore.textContent = score;
   finalTime.textContent = (elapsedTime / 1000).toFixed(2);
+
   gameOverScreen.style.display = 'flex';
   canvas.classList.add('blurred');
 
   soundButton.style.display = 'block';
+  updateSoundButtonImage(); 
 }
 
-// Обробники подій для кнопок
 startButton.addEventListener('click', startGame);
 restartButton.addEventListener('click', restartGame);
 
+// Функція для оновлення зображення кнопки звуку
+function updateSoundButtonImage() {
+  soundButton.innerHTML = ''; // Очищуємо попередній вміст кнопки
+
+  if (soundOn) {
+    soundOnImg.width = 40;  // Встановлюємо ширину зображення
+    soundOnImg.height = 40; // Встановлюємо висоту зображення
+    soundButton.appendChild(soundOnImg);
+  } else {
+    soundOffImg.width = 40;  // Встановлюємо ширину зображення
+    soundOffImg.height = 40; // Встановлюємо висоту зображення
+    soundButton.appendChild(soundOffImg);
+  }
+}
+
+// Обробник події для кнопки звуку
 soundButton.addEventListener('click', () => {
   soundOn = !soundOn;
 
@@ -631,49 +693,79 @@ soundButton.addEventListener('click', () => {
   coinSound.mute(!soundOn);
   endSound.mute(!soundOn);
 
-  soundButton.textContent = soundOn ? '🔔' : '🔕';
+  updateSoundButtonImage(); // Оновлюємо зображення кнопки
 });
 
 resumeButton.addEventListener('click', togglePause);
 
-// Завантаження зображень та запуск гри
 const loadingScreen = document.getElementById('loadingScreen');
 const loadingProgress = document.getElementById('loadingProgress');
 const loadingText = document.getElementById('loadingText');
 
 function updateLoadingProgress(progress) {
   loadingProgress.style.width = `${progress}%`;
-  loadingText.textContent = `Loading...`;
+  loadingText.textContent = `Loading... ${progress}%`;
 }
 
 Promise.all([
   new Promise((resolve) => {
     grassImg.onload = resolve;
-    updateLoadingProgress(25);
+    updateLoadingProgress(10);
   }),
   new Promise((resolve) => {
     background.img.onload = resolve;
-    updateLoadingProgress(50);
+    updateLoadingProgress(20);
   }),
   new Promise((resolve) => {
     superMushroomImg.onload = resolve;
-    updateLoadingProgress(75);
+    updateLoadingProgress(30);
   }),
   new Promise((resolve) => {
-    charWizardImg.onload = resolve; // Додали завантаження charWizardImg
-    updateLoadingProgress(100);
+    charWizardImg.onload = resolve;
+    updateLoadingProgress(40);
   }),
+  new Promise((resolve) => {
+    scoreImg.onload = resolve;
+    updateLoadingProgress(60);
+  }),
+  new Promise((resolve) => {
+    timeImg.onload = resolve;
+    updateLoadingProgress(80);
+  }),
+  ...mushroomImages.map((img) => new Promise((resolve) => {
+    img.onload = resolve;
+  })),
+  ...obstacleImages.map((img) => new Promise((resolve) => {
+    img.onload = resolve;
+  })),
 ]).then(() => {
   setTimeout(() => {
     loadingScreen.style.display = 'none';
     canvas.classList.add('blurred');
+
     showStartScreen();
   }, 500);
+  updateLoadingProgress(100);
 });
 
-// Функція для показу початкового екрану
 function showStartScreen() {
   gameStartScreen.style.display = 'block';
   startButton.style.display = 'block';
   soundButton.style.display = 'block';
+
+  updateSoundButtonImage();
+
+  function updateSoundButtonImage() {
+  soundButton.innerHTML = ''; // Очищуємо попередній вміст кнопки
+
+  if (soundOn) {
+    soundOnImg.width = 40;  // Встановлюємо ширину зображення
+    soundOnImg.height = 40; // Встановлюємо висоту зображення
+    soundButton.appendChild(soundOnImg);
+  } else {
+    soundOffImg.width = 40;  // Встановлюємо ширину зображення
+    soundOffImg.height = 40; // Встановлюємо висоту зображення
+    soundButton.appendChild(soundOffImg);
+  }
+}
 }
