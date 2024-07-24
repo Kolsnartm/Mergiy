@@ -53,8 +53,8 @@ const PAUSE_AREA_HEIGHT = 60;
 // Змінні для автоматичного стрибка
 let autoJumpInterval = null;
 const jumpHistory = [];
-const historyDuration = 2; 
-const maxHistoryLength = historyDuration * 60; 
+const historyDuration = 2;
+const maxHistoryLength = historyDuration * 60;
 let isAutoJumping = false;
 
 // Гравці
@@ -256,7 +256,7 @@ function recordJump() {
 
 // Функція для запуску автоматичного стрибка
 function startAutoJump() {
-  if (autoJumpInterval) return; 
+  if (autoJumpInterval) return;
 
   isAutoJumping = true;
 
@@ -265,7 +265,7 @@ function startAutoJump() {
   for (let i = 1; i < recentJumps.length; i++) {
     intervalSum += recentJumps[i] - recentJumps[i - 1];
   }
-  const averageInterval = recentJumps.length > 1 ? intervalSum / (recentJumps.length - 1) : 300;
+  const averageInterval = recentJumps.length > 1 ? intervalSum / (recentJumps.length - 1) : 300; 
 
   autoJumpInterval = setInterval(() => {
     jump();
@@ -637,7 +637,7 @@ function togglePause() {
 
 canvas.addEventListener('touchstart', function (event) {
   event.preventDefault();
-  recordJump(); 
+  recordJump();
 
   if (!gameStarted) {
     startGame();
@@ -683,15 +683,13 @@ document.addEventListener('keydown', function (event) {
 document.addEventListener('visibilitychange', function() {
   if (document.hidden) { 
     if (gameStarted && !gameOver && !gamePaused) {
-      togglePause();
+      togglePause(); 
     }
-  } else {  
-    if (gameStarted && gamePaused) {
-      if (soundOn) {
-        backgroundMusic.mute(false);
-        if (hitruk.isInvincible && !boostSound.playing()) {
-          boostSound.play();
-        }
+  } else { 
+    if (soundOn) {
+      backgroundMusic.mute(false);
+      if (hitruk.isInvincible && !boostSound.playing() && !gamePaused) {
+        boostSound.play();
       }
     }
   }
@@ -699,7 +697,7 @@ document.addEventListener('visibilitychange', function() {
 
 window.addEventListener('pagehide', function() {
   if (gameStarted && !gameOver && !gamePaused) {
-    togglePause();
+    togglePause(); 
   }
 });
 
@@ -758,11 +756,11 @@ function updateSoundButtonImage() {
   soundButton.innerHTML = ''; 
 
   if (soundOn) {
-    soundOnImg.width = 40; 
+    soundOnImg.width = 40;
     soundOnImg.height = 40;
     soundButton.appendChild(soundOnImg);
   } else {
-    soundOffImg.width = 40; 
+    soundOffImg.width = 40;
     soundOffImg.height = 40;
     soundButton.appendChild(soundOffImg);
   }
@@ -776,7 +774,7 @@ soundButton.addEventListener('click', () => {
   coinSound.mute(!soundOn);
   endSound.mute(!soundOn);
 
-  updateSoundButtonImage(); 
+  updateSoundButtonImage();
 });
 
 resumeButton.addEventListener('click', togglePause);
@@ -842,8 +840,8 @@ function showStartScreen() {
   soundButton.innerHTML = ''; 
 
   if (soundOn) {
-    soundOnImg.width = 40; 
-    soundOnImg.height = 40;
+    soundOnImg.width = 40;  
+    soundOnImg.height = 40; 
     soundButton.appendChild(soundOnImg);
   } else {
     soundOffImg.width = 40; 
