@@ -472,7 +472,7 @@ function update() {
       ctx.filter = 'brightness(150%)';
 
       if (particle.type === 'image') {
-        ctx.drawImage(particle.image, particle.x, particle.y, 35, 35);
+        ctx.drawImage(particle.image, particle.x, particle.y, 30, 30);
       }
 
       ctx.filter = 'none';
