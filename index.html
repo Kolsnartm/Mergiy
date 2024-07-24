@@ -33,7 +33,10 @@
 
   <div id="gameOverScreen">
     <h2>Game Over</h2>
-    <p>Score: <span id="finalScore"></span> 💰</p>
+    <div style="display: flex; align-items: center;">
+      <p style="margin: 0; padding-right: 5px;">Score: <span id="finalScore"></span></p> 
+      <img src="elements/Ui2.png" alt="coin" width="40" height="40">
+    </div>
     <p>Time: <span id="finalTime"></span> sec</p> 
     <button id="restartButton">Try again!</button>
   </div>
@@ -46,7 +49,7 @@
   <div id="gameStartScreen"></div>
 
   <button id="startButton" class="no-blur">Press to Start</button>
-  <button id="soundButton" class="no-blur">🔔</button>
+  <button id="soundButton" class="no-blur"></button>
 
   <script src="howler.js"></script> 
   <script src="script.js"></script> 
