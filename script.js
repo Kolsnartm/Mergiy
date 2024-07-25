@@ -48,12 +48,15 @@ let baseGameSpeed = 1;
 let gameSpeed = baseGameSpeed;
 let lastSuperMushroomTime = 0;
 let speedBeforeSuperMushroom = 0;
-const PAUSE_AREA_HEIGHT = 60; 
+const PAUSE_AREA_HEIGHT = 60;
+
+// Змінна для збереження часу паузи
+let timeAtPause;
 
 // Змінні для автоматичного стрибка
 let autoJumpInterval = null;
 const jumpHistory = [];
-const historyDuration = 2;
+const historyDuration = 2; 
 const maxHistoryLength = historyDuration * 60;
 let isAutoJumping = false;
 
@@ -294,6 +297,12 @@ function update() {
   hitruk.velocity += hitruk.gravity;
   hitruk.y += hitruk.velocity;
 
+  // Обмеження висоти стрибка
+  if (hitruk.y < -100) { 
+    hitruk.y = -100;
+    hitruk.velocity = 0;
+  }
+
   if (hitruk.y + hitruk.size > canvas.height) {
     hitruk.y = canvas.height - hitruk.size;
     hitruk.velocity = 0;
@@ -303,7 +312,7 @@ function update() {
       endSound.play();
       showGameOverScreen();
     } else if (isAutoJumping) {
-      stopAutoJump(); 
+      stopAutoJump();
     }
   }
 
@@ -531,7 +540,10 @@ function update() {
   ctx.font = '20px Arial';
   ctx.fillText(`: ${score}`, 45, 30);
 
-  elapsedTime = performance.now() - startTime;
+  // Оновлюємо elapsedTime тільки якщо гра не на паузі
+  if (!gamePaused) {
+    elapsedTime = performance.now() - startTime;
+  }
 
   // Відображення часу гри
   const timeText = `: ${(elapsedTime / 1000).toFixed(2)}`;
@@ -610,9 +622,12 @@ function togglePause() {
   gamePaused = !gamePaused;
 
   if (gamePaused) {
+    // Зберігаємо час, коли поставили гру на паузу
+    timeAtPause = performance.now();
+
     backgroundMusic.pause();
     if (boostSound.playing()) {
-      boostSound.pause(); 
+      boostSound.pause();
     }
 
     pauseScreen.style.display = 'flex';
@@ -621,9 +636,15 @@ function togglePause() {
     soundButton.style.display = 'block';
     updateSoundButtonImage();
   } else {
+    // Розраховуємо час, який пройшов на паузі
+    const pauseDuration = performance.now() - timeAtPause;
+
+    // Додаємо час паузи до часу початку гри
+    startTime += pauseDuration;
+
     backgroundMusic.play();
     if (soundOn && hitruk.isInvincible && !boostSound.playing()) {
-      boostSound.play(); 
+      boostSound.play();
     }
 
     pauseScreen.style.display = 'none';
@@ -644,18 +665,18 @@ canvas.addEventListener('touchstart', function (event) {
   } else if (gameOver) {
     //restartGame();
   } else {
-    if (event.touches[0].clientY < PAUSE_AREA_HEIGHT && gameStarted) { 
+    if (event.touches[0].clientY < PAUSE_AREA_HEIGHT && gameStarted) {
       togglePause();
     } else {
       jump();
-      startAutoJump(); 
+      startAutoJump();
     }
   }
 });
 
 canvas.addEventListener('touchend', function (event) {
   event.preventDefault();
-  stopAutoJump(); 
+  stopAutoJump();
 });
 
 canvas.addEventListener('click', function (event) {
@@ -680,12 +701,12 @@ document.addEventListener('keydown', function (event) {
   }
 });
 
-document.addEventListener('visibilitychange', function() {
-  if (document.hidden) { 
+document.addEventListener('visibilitychange', function () {
+  if (document.hidden) {
     if (gameStarted && !gameOver && !gamePaused) {
-      togglePause(); 
+      togglePause();
     }
-  } else { 
+  } else {
     if (soundOn) {
       backgroundMusic.mute(false);
       if (hitruk.isInvincible && !boostSound.playing() && !gamePaused) {
@@ -695,9 +716,9 @@ document.addEventListener('visibilitychange', function() {
   }
 });
 
-window.addEventListener('pagehide', function() {
+window.addEventListener('pagehide', function () {
   if (gameStarted && !gameOver && !gamePaused) {
-    togglePause(); 
+    togglePause();
   }
 });
 
@@ -710,7 +731,7 @@ function createParticles(x, y) {
     'elements/E3.png',
     'elements/E4.png',
     'elements/E5.png',
-    'elements/E6.png'
+    'elements/E6.png',
   ];
 
   for (let i = 0; i < particleCount; i++) {
@@ -753,7 +774,7 @@ startButton.addEventListener('click', startGame);
 restartButton.addEventListener('click', restartGame);
 
 function updateSoundButtonImage() {
-  soundButton.innerHTML = ''; 
+  soundButton.innerHTML = '';
 
   if (soundOn) {
     soundOnImg.width = 40;
@@ -837,16 +858,16 @@ function showStartScreen() {
   updateSoundButtonImage();
 
   function updateSoundButtonImage() {
-  soundButton.innerHTML = ''; 
+    soundButton.innerHTML = '';
 
-  if (soundOn) {
-    soundOnImg.width = 40;  
-    soundOnImg.height = 40; 
-    soundButton.appendChild(soundOnImg);
-  } else {
-    soundOffImg.width = 40; 
-    soundOffImg.height = 40; 
-    soundButton.appendChild(soundOffImg);
+    if (soundOn) {
+      soundOnImg.width = 40;
+      soundOnImg.height = 40;
+      soundButton.appendChild(soundOnImg);
+    } else {
+      soundOffImg.width = 40;
+      soundOffImg.height = 40;
+      soundButton.appendChild(soundOffImg);
+    }
   }
-}
 }
