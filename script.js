@@ -348,7 +348,7 @@ function update() {
       backgroundMusic.pause();
     }
 
-    if (hitruk.invincibilityTime === 20000) {
+    if (hitruk.invincibilityTime === 15000) {
       speedBeforeSuperMushroom = gameSpeed;
 
       let targetGameSpeed = gameSpeed * 3;
@@ -458,7 +458,7 @@ function update() {
 
       if (collectible.type === 'super') {
         hitruk.isInvincible = true;
-        hitruk.invincibilityTime = 20000;
+        hitruk.invincibilityTime = 15000;
         hitruk.size = hitruk.originalSize * 2;
         hitruk.scoreMultiplier = 3;
 
