@@ -56,9 +56,12 @@ let timeAtPause;
 // Змінні для автоматичного стрибка
 let autoJumpInterval = null;
 const jumpHistory = [];
-const historyDuration = 2; 
+const historyDuration = 2;
 const maxHistoryLength = historyDuration * 60;
 let isAutoJumping = false;
+
+// Змінна для відстеження стану звуку супер-гриба перед паузою
+let wasBoostSoundPlaying = false;
 
 // Гравці
 const hitruk = {
@@ -329,7 +332,7 @@ function update() {
     const barHeight = ctx.measureText('Р').width / 2;
 
     ctx.fillStyle = 'purple';
-    const currentBarWidth = (barWidth * hitruk.invincibilityTime) / 20000;
+    const currentBarWidth = (barWidth * hitruk.invincibilityTime) / 15000;
     ctx.fillRect(
       barX + (barWidth - currentBarWidth) / 2,
       barY,
@@ -458,6 +461,9 @@ function update() {
         hitruk.invincibilityTime = 20000;
         hitruk.size = hitruk.originalSize * 2;
         hitruk.scoreMultiplier = 3;
+
+        // Скидаємо час звуку супер гриба
+        boostSound.stop();
       } else {
         coinSound.play();
 
@@ -571,6 +577,8 @@ function startGame() {
   score = 0;
   startTime = performance.now();
 
+  wasBoostSoundPlaying = false;
+
   backgroundMusic.play();
 
   gameStartScreen.style.display = 'none';
@@ -589,6 +597,8 @@ function restartGame() {
   hitruk.invincibilityTime = 0;
   hitruk.size = hitruk.originalSize;
   hitruk.scoreMultiplier = 1;
+
+  wasBoostSoundPlaying = false;
 
   score = 0;
   gameOver = false;
@@ -625,10 +635,10 @@ function togglePause() {
     // Зберігаємо час, коли поставили гру на паузу
     timeAtPause = performance.now();
 
+    // Зупиняємо фонову музику та запам'ятовуємо, чи грав буст
+    wasBoostSoundPlaying = boostSound.playing();
     backgroundMusic.pause();
-    if (boostSound.playing()) {
-      boostSound.pause();
-    }
+    boostSound.pause();
 
     pauseScreen.style.display = 'flex';
     canvas.classList.add('blurred');
@@ -642,9 +652,11 @@ function togglePause() {
     // Додаємо час паузи до часу початку гри
     startTime += pauseDuration;
 
-    backgroundMusic.play();
-    if (soundOn && hitruk.isInvincible && !boostSound.playing()) {
+    // Відновлюємо музику в залежності від стану
+    if (wasBoostSoundPlaying) {
       boostSound.play();
+    } else {
+      backgroundMusic.play();
     }
 
     pauseScreen.style.display = 'none';
@@ -666,6 +678,7 @@ canvas.addEventListener('touchstart', function (event) {
     //restartGame();
   } else {
     if (event.touches[0].clientY < PAUSE_AREA_HEIGHT && gameStarted) {
+      wasBoostSoundPlaying = boostSound.playing();
       togglePause();
     } else {
       jump();
