@@ -529,8 +529,6 @@ function update() {
     } else {
       ctx.globalAlpha = particle.opacity;
 
-      ctx.filter = 'brightness(150%)';
-
       if (particle.type === 'image') {
         ctx.drawImage(particle.image, particle.x, particle.y, 30, 30);
       }
