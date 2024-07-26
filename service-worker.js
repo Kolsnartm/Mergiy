@@ -1,4 +1,4 @@
-const CACHE_NAME = 'mergiy-game-v1';
+const CACHE_NAME = 'mergiy-game-v1.2';
 const urlsToCache = [
   '/Mergiy/',
   '/Mergiy/index.html',
