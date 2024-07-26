@@ -1,4 +1,4 @@
-let CACHE_NAME = 'mergiy-game-v3'; // Не забудьте оновити версію при наступному розгортанні!
+let CACHE_NAME = 'mergiy-game-v4'; // Не забудьте оновити версію при наступному розгортанні!
 
 const urlsToCache = [
   '/Mergiy/',
