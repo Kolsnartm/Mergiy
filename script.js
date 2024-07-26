@@ -964,32 +964,4 @@ function showStartScreen() {
       soundButton.appendChild(soundOffImg);
     }
   }
-
-  // *** Реєстрація та оновлення service worker ***
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('/Mergiy/service-worker.js')
-      .then(registration => {
-        console.log('Service worker зареєстровано:', registration);
-
-        // Перевірка оновлень кожні 5 хвилин
-        setInterval(() => {
-          registration.update()
-            .then(updated => {
-              if (updated) {
-                console.log('Нова версія service worker встановлена!');
-                // Додайте логіку для відображення повідомлення користувачу про оновлення 
-              } else {
-                console.log('Service worker вже оновлений');
-              }
-            })
-            .catch(error => {
-              console.error('Помилка оновлення service worker:', error);
-            });
-        }, 300000); // 300000 мілісекунд = 5 хвилин
-      })
-      .catch(error => {
-        console.error('Помилка реєстрації service worker:', error);
-      });
-  }
-  // *** Кінець коду реєстрації та оновлення service worker ***
 }
