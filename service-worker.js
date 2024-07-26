@@ -1,4 +1,5 @@
-let CACHE_NAME = 'mergiy-game-v2'; // Не забудьте оновити версію при розгортанні!
+let CACHE_NAME = 'mergiy-game-v3'; // Не забудьте оновити версію при наступному розгортанні!
+
 const urlsToCache = [
   '/Mergiy/',
   '/Mergiy/index.html',
@@ -37,6 +38,8 @@ const urlsToCache = [
   '/Mergiy/elements/M3.PNG',
   '/Mergiy/elements/charWizard.PNG',
   '/Mergiy/elements/M1.PNG',
+  // Резервна сторінка:
+  '/Mergiy/offline.html' 
 ];
 
 self.addEventListener('install', function(event) {
@@ -84,10 +87,25 @@ self.addEventListener('fetch', function(event) {
               const responseToCache = response.clone();
               caches.open(CACHE_NAME)
                 .then(function(cache) {
+                  console.log('Service Worker: Додано в кеш:', event.request.url);
                   cache.put(event.request, responseToCache);
                 });
             }
             return response;
+          })
+          .catch(function(error) {
+            console.error('Service Worker: Помилка при завантаженні ресурсу:', error);
+            // Повертаємо fallback-сторінку або повідомлення про помилку:
+            return caches.match('/Mergiy/offline.html')
+              .then(function(offlineResponse) {
+                if (offlineResponse) {
+                  console.log('Service Worker: Повернення fallback-сторінки з кешу.');
+                  return offlineResponse;
+                } else {
+                  console.log('Service Worker: Не вдалося знайти fallback-сторінку в кеші.');
+                  return new Response('Ви офлайн. Перевірте з\'єднання з Інтернетом.');
+                }
+              });
           });
       })
   );
