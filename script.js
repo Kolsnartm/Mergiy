@@ -836,6 +836,9 @@ const totalResources =
   7; // 7 - інші зображення та звуки
 
 function updateLoadingProgress(progress) {
+  // Обмежуємо progress до 100
+  progress = Math.min(progress, 100);
+
   loadingProgress.style.width = `${progress}%`;
   loadingText.textContent = `Loading... ${progress}%`;
 }
