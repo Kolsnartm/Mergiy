@@ -1,4 +1,4 @@
-const CACHE_NAME = 'mergiy-game-v1';
+const CACHE_NAME = 'mergiy-game-v1.3';
 const urlsToCache = [
   '/Mergiy/',
   '/Mergiy/index.html',
@@ -24,15 +24,41 @@ self.addEventListener('install', function(event) {
   );
 });
 
+self.addEventListener('activate', function(event) {
+  event.waitUntil(
+    caches.keys().then(function(cacheNames) {
+      return Promise.all(
+        cacheNames.map(function(cacheName) {
+          if (cacheName !== CACHE_NAME) {
+            return caches.delete(cacheName);
+          }
+        })
+      );
+    })
+  );
+});
+
 self.addEventListener('fetch', function(event) {
   event.respondWith(
-    caches.match(event.request)
-      .then(function(response) {
+    caches.open(CACHE_NAME).then(function(cache) {
+      return cache.match(event.request).then(function(response) {
+        // Якщо ресурс є в кеші, повертаємо його
         if (response) {
           return response;
         }
-        return fetch(event.request);
-      }
-    )
+
+        // Якщо ресурсу немає в кеші, завантажуємо його з мережі
+        return fetch(event.request).then(function(networkResponse) {
+          // Додаємо новий ресурс до кешу
+          cache.put(event.request, networkResponse.clone());
+          // Повертаємо ресурс з мережі
+          return networkResponse;
+        }).catch(function() {
+          // Якщо немає мережі, повертаємо помилку
+          console.log('Fetch failed; returning offline page instead.');
+          return caches.match('/Mergiy/offline.html'); // Замініть на вашу сторінку офлайн режиму
+        });
+      });
+    })
   );
 });
