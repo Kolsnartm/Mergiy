@@ -68,8 +68,8 @@ let wasBoostSoundPlaying = false;
 const hitruk = {
   x: canvas.width / 4,
   y: canvas.height / 2,
-  size: 91,
-  originalSize: 91,
+  size: 51,
+  originalSize: 51,
   velocity: 0,
   gravity: 0.6,
   jump: -13,
