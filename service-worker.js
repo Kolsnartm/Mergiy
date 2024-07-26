@@ -12,31 +12,7 @@ const urlsToCache = [
   '/Mergiy/Background.jpeg',
   '/Mergiy/Supermushroom.png',
   '/Mergiy/icon-192x192.png',
-  '/Mergiy/icon-512x512.png',
-  // Файли з папки elements:
-  '/Mergiy/elements/O4.PNG',
-  '/Mergiy/elements/O3.PNG',
-  '/Mergiy/elements/O2.PNG',
-  '/Mergiy/elements/M8.PNG',
-  '/Mergiy/elements/O1.PNG',
-  '/Mergiy/elements/E5.PNG',
-  '/Mergiy/elements/E4.PNG',
-  '/Mergiy/elements/E6.PNG',
-  '/Mergiy/elements/E3.PNG',
-  '/Mergiy/elements/E2.PNG',
-  '/Mergiy/elements/E1.PNG',
-  '/Mergiy/elements/S1.PNG',
-  '/Mergiy/elements/Ui2.PNG',
-  '/Mergiy/elements/S2.PNG',
-  '/Mergiy/elements/Ui1.PNG',
-  '/Mergiy/elements/M4.PNG',
-  '/Mergiy/elements/M5.PNG',
-  '/Mergiy/elements/M7.PNG',
-  '/Mergiy/elements/M6.PNG',
-  '/Mergiy/elements/M2.PNG',
-  '/Mergiy/elements/M3.PNG',
-  '/Mergiy/elements/charWizard.PNG',
-  '/Mergiy/elements/M1.PNG',
+  '/Mergiy/icon-512x512.png'
 ];
 
 self.addEventListener('install', function(event) {
