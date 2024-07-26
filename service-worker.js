@@ -1,4 +1,4 @@
-const CACHE_NAME = 'mergiy-game-v3'; // Не забудьте оновити версію при розгортанні!
+const CACHE_NAME = 'mergiy-game-v1';
 const urlsToCache = [
   '/Mergiy/',
   '/Mergiy/index.html',
@@ -39,67 +39,24 @@ const urlsToCache = [
   '/Mergiy/elements/M1.PNG',
 ];
 
-self.addEventListener('install', (event) => {
-  console.log('Service Worker: Встановлення...');
+self.addEventListener('install', function(event) {
   event.waitUntil(
     caches.open(CACHE_NAME)
-      .then((cache) => {
-        console.log('Service Worker: Кешування файлів...');
+      .then(function(cache) {
         return cache.addAll(urlsToCache);
-      })
-      .then(() => {
-        // Видаляємо старий кеш після завантаження нового
-        console.log('Service Worker: Видалення старих кешів...');
-        return caches.keys().then((cacheNames) => {
-          return Promise.all(
-            cacheNames.map((cacheName) => {
-              if (cacheName !== CACHE_NAME) {
-                console.log('Service Worker: Видалено старий кеш:', cacheName);
-                return caches.delete(cacheName);
-              }
-            })
-          );
-        });
       })
   );
 });
 
-self.addEventListener('fetch', (event) => {
-  console.log('Service Worker: Запит на:', event.request.url);
+self.addEventListener('fetch', function(event) {
   event.respondWith(
-    // Реалізуємо стратегію stale-while-revalidate
     caches.match(event.request)
-      .then((response) => {
-        // Якщо ресурс є в кеші, повертаємо його
+      .then(function(response) {
         if (response) {
-          console.log('Service Worker: Повернення з кешу:', event.request.url);
-          // Оновлюємо кеш у фоновому режимі
-          event.waitUntil(
-            fetch(event.request).then((networkResponse) => {
-              if (networkResponse.status === 200) {
-                caches.open(CACHE_NAME).then((cache) => {
-                  cache.put(event.request, networkResponse.clone());
-                });
-              }
-            })
-          );
           return response;
         }
-
-        // Якщо ресурсу немає в кеші, завантажуємо з мережі
-        console.log('Service Worker: Завантаження з мережі:', event.request.url);
-        return fetch(event.request)
-          .then((networkResponse) => {
-            // Кешуємо новий/оновлений ресурс
-            if (networkResponse.status === 200) {
-              const responseToCache = networkResponse.clone();
-              caches.open(CACHE_NAME)
-                .then((cache) => {
-                  cache.put(event.request, responseToCache);
-                });
-            }
-            return networkResponse;
-          });
-      })
+        return fetch(event.request);
+      }
+    )
   );
 });
