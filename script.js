@@ -1,22 +1,23 @@
 // Звуки
-const backgroundMusic = new Howl({
-  src: ['Birds.wav'],
-  loop: true,
-  volume: 0.5,
-});
+let backgroundMusic;
+let boostSound;
+let coinSound;
+let endSound;
 
-const boostSound = new Howl({
-  src: ['Boost.wav'],
-  volume: 0.8,
-});
-
-const coinSound = new Howl({
-  src: ['Coin.wav'],
-});
-
-const endSound = new Howl({
-  src: ['End.wav'],
-});
+// Функція для завантаження аудіофайлу з обробкою помилок
+function loadAudio(src) {
+  return new Promise((resolve, reject) => {
+    const audio = new Howl({
+      src: src,
+      onload: () => {
+        resolve(audio);
+      },
+      onloaderror: (id, error) => {
+        reject(new Error(`Помилка завантаження аудіо ${src}: ${error}`));
+      },
+    });
+  });
+}
 
 // Елементи DOM
 const gameOverScreen = document.getElementById('gameOverScreen');
@@ -132,6 +133,20 @@ const obstacleImages = [
   return img;
 });
 
+// Зображення для частинок
+const particleImages = [
+  'elements/E1.png',
+  'elements/E2.png',
+  'elements/E3.png',
+  'elements/E4.png',
+  'elements/E5.png',
+  'elements/E6.png',
+].map((imagePath) => {
+  const img = new Image();
+  img.src = imagePath;
+  return img;
+});
+
 // Анімація
 let initialAnimationDuration = canvas.style.animationDuration;
 
@@ -206,13 +221,7 @@ function drawMovingGrass() {
   const repetitions = Math.ceil(canvas.width / 1648) + 1;
 
   for (let i = 0; i < repetitions; i++) {
-    ctx.drawImage(
-      grassImg,
-      grassOffset + i * 1648,
-      y,
-      1648,
-      grassHeight
-    );
+    ctx.drawImage(grassImg, grassOffset + i * 1648, y, 1648, grassHeight);
   }
 }
 
@@ -255,7 +264,7 @@ function recordJump() {
   if (!isAutoJumping) {
     jumpHistory.push(Date.now());
     if (jumpHistory.length > maxHistoryLength) {
-      jumpHistory.shift(); 
+      jumpHistory.shift();
     }
   }
 }
@@ -267,11 +276,14 @@ function startAutoJump() {
   isAutoJumping = true;
 
   let intervalSum = 0;
-  const recentJumps = jumpHistory.filter(timestamp => Date.now() - timestamp <= historyDuration * 1000);
+  const recentJumps = jumpHistory.filter(
+    (timestamp) => Date.now() - timestamp <= historyDuration * 1000
+  );
   for (let i = 1; i < recentJumps.length; i++) {
     intervalSum += recentJumps[i] - recentJumps[i - 1];
   }
-  const averageInterval = recentJumps.length > 1 ? intervalSum / (recentJumps.length - 1) : 300; 
+  const averageInterval =
+    recentJumps.length > 1 ? intervalSum / (recentJumps.length - 1) : 300;
 
   autoJumpInterval = setInterval(() => {
     jump();
@@ -301,7 +313,7 @@ function update() {
   hitruk.y += hitruk.velocity;
 
   // Обмеження висоти стрибка
-  if (hitruk.y < -100) { 
+  if (hitruk.y < -100) {
     hitruk.y = -100;
     hitruk.velocity = 0;
   }
@@ -416,7 +428,8 @@ function update() {
       x: canvas.width,
       y: Math.random() * (canvas.height * 0.9 - 140) + 50,
       type: mushroomImages[randomImageIndex],
-      size: mushroomImages[randomImageIndex] === 'elements/M5.png' ? 100 : 50,
+      size:
+        mushroomImages[randomImageIndex] === 'elements/M5.png' ? 100 : 50,
     });
   }
 
@@ -495,7 +508,13 @@ function update() {
       }
     }
 
-    ctx.drawImage(obstacle.image, obstacle.x, obstacle.y, obstacle.size, obstacle.size);
+    ctx.drawImage(
+      obstacle.image,
+      obstacle.x,
+      obstacle.y,
+      obstacle.size,
+      obstacle.size
+    );
 
     if (obstacle.x < -obstacle.size) {
       obstacles.splice(i, 1);
@@ -552,7 +571,13 @@ function update() {
   // Відображення часу гри
   const timeText = `: ${(elapsedTime / 1000).toFixed(2)}`;
   const timeTextWidth = ctx.measureText(timeText).width;
-  ctx.drawImage(timeImg, canvas.width - timeTextWidth - 45, 10, 30, 30);
+  ctx.drawImage(
+    timeImg,
+    canvas.width - timeTextWidth - 45,
+    10,
+    30,
+    30
+  );
   ctx.fillStyle = 'black';
   ctx.font = '20px Arial';
   ctx.fillText(timeText, canvas.width - timeTextWidth - 10, 30);
@@ -736,35 +761,22 @@ window.addEventListener('pagehide', function () {
 function createParticles(x, y) {
   const particleCount = Math.min(5, Math.floor(score / 10) + 3);
 
-  const imagePaths = [
-    'elements/E1.png',
-    'elements/E2.png',
-    'elements/E3.png',
-    'elements/E4.png',
-    'elements/E5.png',
-    'elements/E6.png',
-  ];
-
   for (let i = 0; i < particleCount; i++) {
     const randomAngle = Math.random() * Math.PI * 2;
     const particleSpeed = Math.random() * 3 + 1;
 
-    const randomImageIndex = Math.floor(Math.random() * imagePaths.length);
+    const randomImageIndex = Math.floor(Math.random() * particleImages.length);
+    const particleImage = particleImages[randomImageIndex];
 
-    const particleImage = new Image();
-    particleImage.src = imagePaths[randomImageIndex];
-
-    particleImage.onload = () => {
-      particles.push({
-        x: x + Math.random() * 30 - 15,
-        y: y,
-        velocity: -particleSpeed * Math.sin(randomAngle),
-        velocityX: particleSpeed * Math.cos(randomAngle),
-        opacity: 1,
-        image: particleImage,
-        type: 'image',
-      });
-    };
+    particles.push({
+      x: x + Math.random() * 30 - 15,
+      y: y,
+      velocity: -particleSpeed * Math.sin(randomAngle),
+      velocityX: particleSpeed * Math.cos(randomAngle),
+      opacity: 1,
+      image: particleImage,
+      type: 'image',
+    });
   }
 }
 
@@ -815,51 +827,119 @@ const loadingScreen = document.getElementById('loadingScreen');
 const loadingProgress = document.getElementById('loadingProgress');
 const loadingText = document.getElementById('loadingText');
 
+// Відстежуємо кількість завантажених ресурсів
+let loadedResources = 0;
+const totalResources =
+  mushroomImages.length +
+  obstacleImages.length +
+  particleImages.length +
+  7; // 7 - інші зображення та звуки
+
 function updateLoadingProgress(progress) {
   loadingProgress.style.width = `${progress}%`;
   loadingText.textContent = `Loading... ${progress}%`;
 }
 
+// Завантажуємо всі ресурси (зображення та звуки)
 Promise.all([
   new Promise((resolve) => {
-    grassImg.onload = resolve;
-    updateLoadingProgress(10);
+    grassImg.onload = () => {
+      loadedResources++;
+      updateLoadingProgress(Math.round((loadedResources / totalResources) * 100));
+      resolve();
+    };
   }),
   new Promise((resolve) => {
-    background.img.onload = resolve;
-    updateLoadingProgress(20);
+    background.img.onload = () => {
+      loadedResources++;
+      updateLoadingProgress(Math.round((loadedResources / totalResources) * 100));
+      resolve();
+    };
   }),
   new Promise((resolve) => {
-    superMushroomImg.onload = resolve;
-    updateLoadingProgress(30);
+    superMushroomImg.onload = () => {
+      loadedResources++;
+      updateLoadingProgress(Math.round((loadedResources / totalResources) * 100));
+      resolve();
+    };
   }),
   new Promise((resolve) => {
-    charWizardImg.onload = resolve;
-    updateLoadingProgress(40);
+    charWizardImg.onload = () => {
+      loadedResources++;
+      updateLoadingProgress(Math.round((loadedResources / totalResources) * 100));
+      resolve();
+    };
   }),
   new Promise((resolve) => {
-    scoreImg.onload = resolve;
-    updateLoadingProgress(60);
+    scoreImg.onload = () => {
+      loadedResources++;
+      updateLoadingProgress(Math.round((loadedResources / totalResources) * 100));
+      resolve();
+    };
   }),
   new Promise((resolve) => {
-    timeImg.onload = resolve;
-    updateLoadingProgress(80);
+    timeImg.onload = () => {
+      loadedResources++;
+      updateLoadingProgress(Math.round((loadedResources / totalResources) * 100));
+      resolve();
+    };
   }),
   ...mushroomImages.map((img) => new Promise((resolve) => {
-    img.onload = resolve;
+    img.onload = () => {
+      loadedResources++;
+      updateLoadingProgress(Math.round((loadedResources / totalResources) * 100));
+      resolve();
+    };
   })),
   ...obstacleImages.map((img) => new Promise((resolve) => {
-    img.onload = resolve;
+    img.onload = () => {
+      loadedResources++;
+      updateLoadingProgress(Math.round((loadedResources / totalResources) * 100));
+      resolve();
+    };
   })),
-]).then(() => {
-  setTimeout(() => {
-    loadingScreen.style.display = 'none';
-    canvas.classList.add('blurred');
+  ...particleImages.map((img) => new Promise((resolve) => {
+    img.onload = () => {
+      loadedResources++;
+      updateLoadingProgress(Math.round((loadedResources / totalResources) * 100));
+      resolve();
+    };
+  })),
+  loadAudio(['Birds.wav']).then((audio) => {
+    backgroundMusic = audio;
+    loadedResources++;
+    updateLoadingProgress(Math.round((loadedResources / totalResources) * 100));
+  }),
+  loadAudio(['Boost.wav']).then((audio) => {
+    boostSound = audio;
+    loadedResources++;
+    updateLoadingProgress(Math.round((loadedResources / totalResources) * 100));
+  }),
+  loadAudio(['Coin.wav']).then((audio) => {
+    coinSound = audio;
+    loadedResources++;
+    updateLoadingProgress(Math.round((loadedResources / totalResources) * 100));
+  }),
+  loadAudio(['End.wav']).then((audio) => {
+    endSound = audio;
+    loadedResources++;
+    updateLoadingProgress(Math.round((loadedResources / totalResources) * 100));
+  }),
+])
+  .then(() => {
+    setTimeout(() => {
+      loadingScreen.style.display = 'none';
+      canvas.classList.add('blurred');
 
-    showStartScreen();
-  }, 500);
-  updateLoadingProgress(100);
-});
+      showStartScreen();
+    }, 500);
+    updateLoadingProgress(100);
+  })
+  .catch((error) => {
+    // Обробка помилок завантаження
+    console.error('Помилка завантаження ресурсів:', error);
+    // Додайте логіку обробки помилок, наприклад, відображення повідомлення користувачеві
+  });
 
 function showStartScreen() {
   gameStartScreen.style.display = 'block';
