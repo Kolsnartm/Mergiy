@@ -5,17 +5,13 @@ let coinSound;
 let endSound;
 
 // Функція для завантаження аудіофайлу з обробкою помилок
-function loadAudio(src, loop = false) { // Додаємо параметр loop з default false
+async function loadAudio(src, loop = false) {
   return new Promise((resolve, reject) => {
     const audio = new Howl({
       src: src,
-      onload: () => {
-        resolve(audio);
-      },
-      onloaderror: (id, error) => {
-        reject(new Error(`Помилка завантаження аудіо ${src}: ${error}`));
-      },
-      loop: loop // Встановлюємо loop згідно з параметром
+      loop: loop,
+      onload: () => resolve(audio),
+      onloaderror: (id, error) => reject(new Error(`Помилка завантаження аудіо ${src}: ${error}`)),
     });
   });
 }
@@ -30,6 +26,9 @@ const finalScore = document.getElementById('finalScore');
 const finalTime = document.getElementById('finalTime');
 const restartButton = document.getElementById('restartButton');
 const resumeButton = document.getElementById('resumeButton');
+const loadingScreen = document.getElementById('loadingScreen');
+const loadingProgress = document.getElementById('loadingProgress');
+const loadingText = document.getElementById('loadingText');
 
 // Налаштування канвасу
 const canvas = document.getElementById('gameCanvas');
@@ -603,7 +602,7 @@ function startGame() {
 
   wasBoostSoundPlaying = false;
 
-  backgroundMusic.play();
+  playBackgroundMusic(); // Запускаємо фонову музику
 
   gameStartScreen.style.display = 'none';
   canvas.classList.remove('blurred');
@@ -661,7 +660,7 @@ function togglePause() {
 
     // Зупиняємо фонову музику та запам'ятовуємо, чи грав буст
     wasBoostSoundPlaying = boostSound.playing();
-    backgroundMusic.pause();
+    stopBackgroundMusic(); // Зупиняємо фонову музику
     boostSound.pause();
 
     pauseScreen.style.display = 'flex';
@@ -680,7 +679,7 @@ function togglePause() {
     if (wasBoostSoundPlaying) {
       boostSound.play();
     } else {
-      backgroundMusic.play();
+      playBackgroundMusic(); // Запускаємо фонову музику
     }
 
     pauseScreen.style.display = 'none';
@@ -738,24 +737,33 @@ document.addEventListener('keydown', function (event) {
   }
 });
 
-document.addEventListener('visibilitychange', function () {
-  if (document.hidden) {
-    if (gameStarted && !gameOver && !gamePaused) {
-      togglePause();
-    }
-  } else {
-    if (soundOn) {
-      backgroundMusic.mute(false);
-      if (hitruk.isInvincible && !boostSound.playing() && !gamePaused) {
-        boostSound.play();
-      }
-    }
+// Функція для запуску фонової музики
+function playBackgroundMusic() {
+  if (soundOn && !backgroundMusic.playing()) {
+    backgroundMusic.play();
   }
+}
+
+// Функція для зупинки фонової музики
+function stopBackgroundMusic() {
+  if (backgroundMusic.playing()) {
+    backgroundMusic.pause();
+  }
+}
+
+// Обробка події завершення відтворення фонової музики
+backgroundMusic.on('end', function() {
+  playBackgroundMusic(); // Перезапускаємо музику
 });
 
-window.addEventListener('pagehide', function () {
-  if (gameStarted && !gameOver && !gamePaused) {
-    togglePause();
+// Обробка події видимості сторінки
+document.addEventListener('visibilitychange', function () {
+  if (document.hidden) {
+    // Сторінка стала невидимою (користувач перейшов на іншу вкладку, згорнув вікно тощо)
+    stopBackgroundMusic();
+  } else {
+    // Сторінка стала видимою
+    playBackgroundMusic();
   }
 });
 
@@ -782,7 +790,7 @@ function createParticles(x, y) {
 }
 
 function showGameOverScreen() {
-  backgroundMusic.pause();
+  stopBackgroundMusic(); // Зупиняємо фонову музику
 
   finalScore.textContent = score;
   finalTime.textContent = (elapsedTime / 1000).toFixed(2);
@@ -814,7 +822,12 @@ function updateSoundButtonImage() {
 soundButton.addEventListener('click', () => {
   soundOn = !soundOn;
 
-  backgroundMusic.mute(!soundOn);
+  if (soundOn) {
+    playBackgroundMusic(); // Відновлюємо музику, якщо звук увімкнено
+  } else {
+    stopBackgroundMusic(); // Зупиняємо музику, якщо звук вимкнено
+  }
+
   boostSound.mute(!soundOn);
   coinSound.mute(!soundOn);
   endSound.mute(!soundOn);
@@ -823,10 +836,6 @@ soundButton.addEventListener('click', () => {
 });
 
 resumeButton.addEventListener('click', togglePause);
-
-const loadingScreen = document.getElementById('loadingScreen');
-const loadingProgress = document.getElementById('loadingProgress');
-const loadingText = document.getElementById('loadingText');
 
 // Відстежуємо кількість завантажених ресурсів
 let loadedResources = 0;
