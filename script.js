@@ -5,7 +5,7 @@ let coinSound;
 let endSound;
 
 // Функція для завантаження аудіофайлу з обробкою помилок
-function loadAudio(src) {
+function loadAudio(src, loop = false) { // Додаємо параметр loop з default false
   return new Promise((resolve, reject) => {
     const audio = new Howl({
       src: src,
@@ -15,8 +15,7 @@ function loadAudio(src) {
       onloaderror: (id, error) => {
         reject(new Error(`Помилка завантаження аудіо ${src}: ${error}`));
       },
-      // Додаємо параметр loop: true для циклічного відтворення
-      loop: true
+      loop: loop // Встановлюємо loop згідно з параметром
     });
   });
 }
@@ -910,7 +909,7 @@ Promise.all([
       resolve();
     };
   })),
-  loadAudio(['Birds.wav']).then((audio) => {
+  loadAudio(['Birds.wav', true]).then((audio) => { // Встановлюємо loop: true для фонової музики
     backgroundMusic = audio;
     loadedResources++;
     updateLoadingProgress(Math.round((loadedResources / totalResources) * 100));
