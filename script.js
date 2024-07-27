@@ -5,13 +5,18 @@ let coinSound;
 let endSound;
 
 // Функція для завантаження аудіофайлу з обробкою помилок
-async function loadAudio(src, loop = false) {
+function loadAudio(src) {
   return new Promise((resolve, reject) => {
     const audio = new Howl({
       src: src,
-      loop: loop,
-      onload: () => resolve(audio),
-      onloaderror: (id, error) => reject(new Error(`Помилка завантаження аудіо ${src}: ${error}`)),
+      // Правильна умова для зациклення Birds.wav
+      loop: src[0] === 'Birds.wav',
+      onload: () => {
+        resolve(audio);
+      },
+      onloaderror: (id, error) => {
+        reject(new Error(`Помилка завантаження аудіо ${src}: ${error}`));
+      },
     });
   });
 }
@@ -26,9 +31,6 @@ const finalScore = document.getElementById('finalScore');
 const finalTime = document.getElementById('finalTime');
 const restartButton = document.getElementById('restartButton');
 const resumeButton = document.getElementById('resumeButton');
-const loadingScreen = document.getElementById('loadingScreen');
-const loadingProgress = document.getElementById('loadingProgress');
-const loadingText = document.getElementById('loadingText');
 
 // Налаштування канвасу
 const canvas = document.getElementById('gameCanvas');
@@ -357,7 +359,7 @@ function update() {
 
     if (!boostSound.playing()) {
       boostSound.play();
-      backgroundMusic.pause();
+      backgroundMusic.pause(); // Зупиняємо фонову музику під час бусту
     }
 
     if (hitruk.invincibilityTime === 15000) {
@@ -392,7 +394,7 @@ function update() {
       hitruk.scoreMultiplier = 1;
 
       boostSound.pause();
-      backgroundMusic.play();
+      backgroundMusic.play(); // Відновлюємо фонову музику після бусту
 
       let transitionDuration = 500;
       let startTime = performance.now();
@@ -581,10 +583,6 @@ function update() {
   ctx.fillStyle = 'black';
   ctx.font = '20px Arial';
   ctx.fillText(timeText, canvas.width - timeTextWidth - 10, 30);
-
-  if (gamePaused && boostSound.playing()) {
-    boostSound.pause();
-  }
 }
 
 function jump() {
@@ -602,7 +600,7 @@ function startGame() {
 
   wasBoostSoundPlaying = false;
 
-  playBackgroundMusic(); // Запускаємо фонову музику
+  backgroundMusic.play(); // Використовуємо .play() для зациклення
 
   gameStartScreen.style.display = 'none';
   canvas.classList.remove('blurred');
@@ -660,7 +658,7 @@ function togglePause() {
 
     // Зупиняємо фонову музику та запам'ятовуємо, чи грав буст
     wasBoostSoundPlaying = boostSound.playing();
-    stopBackgroundMusic(); // Зупиняємо фонову музику
+    backgroundMusic.pause();
     boostSound.pause();
 
     pauseScreen.style.display = 'flex';
@@ -679,7 +677,7 @@ function togglePause() {
     if (wasBoostSoundPlaying) {
       boostSound.play();
     } else {
-      playBackgroundMusic(); // Запускаємо фонову музику
+      backgroundMusic.play(); // Використовуємо .play() для зациклення
     }
 
     pauseScreen.style.display = 'none';
@@ -737,33 +735,29 @@ document.addEventListener('keydown', function (event) {
   }
 });
 
-// Функція для запуску фонової музики
-function playBackgroundMusic() {
-  if (soundOn && !backgroundMusic.playing()) {
-    backgroundMusic.play();
-  }
-}
-
-// Функція для зупинки фонової музики
-function stopBackgroundMusic() {
-  if (backgroundMusic.playing()) {
-    backgroundMusic.pause();
-  }
-}
-
-// Обробка події завершення відтворення фонової музики
-backgroundMusic.on('end', function() {
-  playBackgroundMusic(); // Перезапускаємо музику
-});
-
-// Обробка події видимості сторінки
 document.addEventListener('visibilitychange', function () {
   if (document.hidden) {
-    // Сторінка стала невидимою (користувач перейшов на іншу вкладку, згорнув вікно тощо)
-    stopBackgroundMusic();
+    // Сторінка стала неактивною
+    if (gameStarted && !gameOver && !gamePaused) {
+      togglePause();
+    }
   } else {
-    // Сторінка стала видимою
-    playBackgroundMusic();
+    // Сторінка знову активна
+    if (soundOn) {
+      if (!backgroundMusic.playing() && !gamePaused) {
+        backgroundMusic.play(); // Використовуємо .play() для зациклення
+      }
+      if (hitruk.isInvincible && !boostSound.playing() && !gamePaused) {
+        boostSound.play();
+      }
+    }
+  }
+});
+
+// Додано обробник події 'beforeunload'
+window.addEventListener('beforeunload', function () {
+  if (gameStarted && !gameOver && !gamePaused) {
+    togglePause();
   }
 });
 
@@ -790,7 +784,7 @@ function createParticles(x, y) {
 }
 
 function showGameOverScreen() {
-  stopBackgroundMusic(); // Зупиняємо фонову музику
+  backgroundMusic.pause();
 
   finalScore.textContent = score;
   finalTime.textContent = (elapsedTime / 1000).toFixed(2);
@@ -822,12 +816,7 @@ function updateSoundButtonImage() {
 soundButton.addEventListener('click', () => {
   soundOn = !soundOn;
 
-  if (soundOn) {
-    playBackgroundMusic(); // Відновлюємо музику, якщо звук увімкнено
-  } else {
-    stopBackgroundMusic(); // Зупиняємо музику, якщо звук вимкнено
-  }
-
+  backgroundMusic.mute(!soundOn);
   boostSound.mute(!soundOn);
   coinSound.mute(!soundOn);
   endSound.mute(!soundOn);
@@ -836,6 +825,10 @@ soundButton.addEventListener('click', () => {
 });
 
 resumeButton.addEventListener('click', togglePause);
+
+const loadingScreen = document.getElementById('loadingScreen');
+const loadingProgress = document.getElementById('loadingProgress');
+const loadingText = document.getElementById('loadingText');
 
 // Відстежуємо кількість завантажених ресурсів
 let loadedResources = 0;
@@ -897,29 +890,42 @@ Promise.all([
       resolve();
     };
   }),
-  ...mushroomImages.map((img) => new Promise((resolve) => {
-    img.onload = () => {
-      loadedResources++;
-      updateLoadingProgress(Math.round((loadedResources / totalResources) * 100));
-      resolve();
-    };
-  })),
-  ...obstacleImages.map((img) => new Promise((resolve) => {
-    img.onload = () => {
-      loadedResources++;
-      updateLoadingProgress(Math.round((loadedResources / totalResources) * 100));
-      resolve();
-    };
-  })),
-  ...particleImages.map((img) => new Promise((resolve) => {
-    img.onload = () => {
-      loadedResources++;
-      updateLoadingProgress(Math.round((loadedResources / totalResources) * 100));
-      resolve();
-    };
-  })),
-  loadAudio(['Birds.wav', true]).then((audio) => { // Встановлюємо loop: true для фонової музики
+  ...mushroomImages.map((img) =>
+    new Promise((resolve) => {
+      img.onload = () => {
+        loadedResources++;
+        updateLoadingProgress(Math.round((loadedResources / totalResources) * 100));
+        resolve();
+      };
+    })
+  ),
+  ...obstacleImages.map((img) =>
+    new Promise((resolve) => {
+      img.onload = () => {
+        loadedResources++;
+        updateLoadingProgress(Math.round((loadedResources / totalResources) * 100));
+        resolve();
+      };
+    })
+  ),
+  ...particleImages.map((img) =>
+    new Promise((resolve) => {
+      img.onload = () => {
+        loadedResources++;
+        updateLoadingProgress(Math.round((loadedResources / totalResources) * 100));
+        resolve();
+      };
+    })
+  ),
+  loadAudio(['Birds.wav']).then((audio) => {
     backgroundMusic = audio;
+
+    // Додаємо обробник події onend
+    backgroundMusic.on('end', () => {
+      console.log("Фонова музика закінчилась, перезапуск...");
+      backgroundMusic.play();
+    });
+
     loadedResources++;
     updateLoadingProgress(Math.round((loadedResources / totalResources) * 100));
   }),
@@ -978,26 +984,26 @@ function showStartScreen() {
   // *** Реєстрація та оновлення service worker ***
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('/Mergiy/service-worker.js')
-      .then(registration => {
+      .then((registration) => {
         console.log('Service worker зареєстровано:', registration);
 
         // Перевірка оновлень кожні 5 хвилин
         setInterval(() => {
           registration.update()
-            .then(updated => {
+            .then((updated) => {
               if (updated) {
                 console.log('Нова версія service worker встановлена!');
-                // Додайте логіку для відображення повідомлення користувачу про оновлення 
+                // Додайте логіку для відображення повідомлення користувачу про оновлення
               } else {
                 console.log('Service worker вже оновлений');
               }
             })
-            .catch(error => {
+            .catch((error) => {
               console.error('Помилка оновлення service worker:', error);
             });
         }, 300000); // 300000 мілісекунд = 5 хвилин
       })
-      .catch(error => {
+      .catch((error) => {
         console.error('Помилка реєстрації service worker:', error);
       });
   }
